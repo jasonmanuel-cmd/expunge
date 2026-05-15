@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>Expunge App Icon</title>
+  <desc>Expunge app icon — struck record on navy rounded square, 512x512</desc>
+  <!-- rounded square container -->
+  <rect width="512" height="512" rx="110" fill="#1A2E4A"/>
+  <!-- document outline -->
+  <rect x="112" y="72" width="288" height="340" rx="28" fill="none" stroke="#2D6BE4" stroke-width="16"/>
+  <!-- folded corner fill -->
+  <polygon points="288,72 400,72 400,172 288,172" fill="#1A2E4A"/>
+  <!-- folded corner crease -->
+  <polyline points="288,72 400,172 288,172" fill="none" stroke="#2D6BE4" stroke-width="14" stroke-linejoin="round"/>
+  <!-- document lines -->
+  <line x1="148" y1="240" x2="364" y2="240" stroke="#4a7fa8" stroke-width="16" stroke-linecap="round"/>
+  <line x1="148" y1="288" x2="364" y2="288" stroke="#4a7fa8" stroke-width="14" stroke-linecap="round"/>
+  <line x1="148" y1="336" x2="270" y2="336" stroke="#4a7fa8" stroke-width="12" stroke-linecap="round"/>
+  <!-- red X strike -->
+  <line x1="112" y1="72" x2="400" y2="412" stroke="#E63946" stroke-width="28" stroke-linecap="round"/>
+  <line x1="400" y1="72" x2="112" y2="412" stroke="#E63946" stroke-width="28" stroke-linecap="round"/>
+</svg>
