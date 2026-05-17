@@ -94,23 +94,16 @@ export default async function PricingPage() {
                   <div className="w-full text-center py-3 rounded-xl text-sm font-medium border border-white/20 text-[#4a7fa8]">
                     Current plan
                   </div>
-                ) : key === 'free' ? (
-                  <Link
-                    href={user ? '/dashboard' : '/register'}
-                    className="w-full text-center py-3 rounded-xl text-sm font-medium border border-white/20 text-[#4a7fa8] hover:text-white hover:border-white/40 transition block"
-                  >
-                    {plan.cta}
-                  </Link>
                 ) : (
                   <Link
-                    href={user ? `/checkout?plan=${key}` : `/register?redirect=/checkout?plan=${key}`}
+                    href={user ? '/dashboard' : '/register'}
                     className={`w-full text-center py-3 rounded-xl text-sm font-bold transition block ${
                       isHighlighted
                         ? 'bg-[#E63946] hover:bg-[#c92e3a] text-white'
                         : 'bg-white/10 hover:bg-white/20 text-white'
                     }`}
                   >
-                    {plan.cta}
+                    {key === 'free' ? plan.cta : `Start free — ${plan.priceLabel}`}
                   </Link>
                 )}
               </div>
