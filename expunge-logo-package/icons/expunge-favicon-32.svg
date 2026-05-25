@@ -1,0 +1,9 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>Expunge Favicon</title>
+  <rect width="32" height="32" rx="6" fill="#1A2E4A"/>
+  <rect x="5" y="3" width="16" height="22" rx="3" fill="none" stroke="#2D6BE4" stroke-width="1.5"/>
+  <polygon points="15,3 21,3 21,9 15,9" fill="#1A2E4A"/>
+  <polyline points="15,3 21,9 15,9" fill="none" stroke="#2D6BE4" stroke-width="1.2" stroke-linejoin="round"/>
+  <line x1="5" y1="3" x2="21" y2="25" stroke="#E63946" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="21" y1="3" x2="5" y2="25" stroke="#E63946" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

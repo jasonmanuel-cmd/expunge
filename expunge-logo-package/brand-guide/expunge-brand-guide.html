@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expunge — Brand Guide</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, 'Times New Roman', serif; background: #F4F6F9; color: #0D1B2E; }
+  .header { background: #0D1B2E; padding: 3rem 4rem; }
+  .header h1 { color: #fff; font-size: 48px; letter-spacing: 2px; margin-bottom: 6px; }
+  .header p { color: #4a7fa8; font-size: 14px; font-family: Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+  .container { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
+  .section-title { font-family: Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #888; margin: 3rem 0 1rem; padding-bottom: .5rem; border-bottom: 0.5px solid #ccc; }
+  .color-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 2rem; }
+  .swatch { border-radius: 8px; padding: 1rem; min-width: 120px; }
+  .sw-name { font-family: Arial, sans-serif; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+  .sw-hex { font-family: 'Courier New', monospace; font-size: 11px; }
+  .sw-role { font-family: Arial, sans-serif; font-size: 10px; margin-top: 4px; }
+  .logo-grid { display: flex; flex-direction: column; gap: 16px; margin-bottom: 2rem; }
+  .logo-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .logo-block { border-radius: 10px; padding: 1.5rem 2rem; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .logo-label { font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+  .rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 2rem; }
+  .rule-card { background: #fff; border: 0.5px solid #ddd; border-radius: 8px; padding: 1rem 1.25rem; }
+  .rule-title { font-family: Arial, sans-serif; font-size: 13px; font-weight: 700; color: #0D1B2E; margin-bottom: 4px; }
+  .rule-body { font-family: Arial, sans-serif; font-size: 12px; color: #555; line-height: 1.5; }
+  .type-row { background: #fff; border: 0.5px solid #ddd; border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 8px; display: flex; align-items: baseline; gap: 1rem; }
+  .type-spec { font-family: 'Courier New', monospace; font-size: 10px; color: #888; min-width: 160px; }
+  .footer { background: #0D1B2E; padding: 2rem 4rem; margin-top: 4rem; }
+  .footer p { color: #4a7fa8; font-family: Arial, sans-serif; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>EXPUNGE</h1>
+  <p>Brand Identity Guide — Version 1.0</p>
+</div>
+
+<div class="container">
+
+  <div class="section-title">Color System — 60 / 30 / 10 Architecture</div>
+  <div class="color-grid">
+    <div class="swatch" style="background:#0D1B2E">
+      <div class="sw-name" style="color:#85B7EB">Sovereign Navy</div>
+      <div class="sw-hex" style="color:#4a7fa8">#0D1B2E</div>
+      <div class="sw-role" style="color:#4a7fa8">Primary — 60%</div>
+    </div>
+    <div class="swatch" style="background:#1A2E4A">
+      <div class="sw-name" style="color:#85B7EB">Deep Navy</div>
+      <div class="sw-hex" style="color:#4a7fa8">#1A2E4A</div>
+      <div class="sw-role" style="color:#4a7fa8">Header / Nav</div>
+    </div>
+    <div class="swatch" style="background:#F4F6F9; border: 0.5px solid #ddd">
+      <div class="sw-name" style="color:#0D1B2E">Cloud White</div>
+      <div class="sw-hex" style="color:#555">#F4F6F9</div>
+      <div class="sw-role" style="color:#888">Background — 30%</div>
+    </div>
+    <div class="swatch" style="background:#E63946">
+      <div class="sw-name" style="color:#fff">Strike Red</div>
+      <div class="sw-hex" style="color:#fcc">#E63946</div>
+      <div class="sw-role" style="color:#fcc">CTA Only — 10%</div>
+    </div>
+    <div class="swatch" style="background:#2D6BE4">
+      <div class="sw-name" style="color:#fff">Justice Blue</div>
+      <div class="sw-hex" style="color:#c5d9fb">#2D6BE4</div>
+      <div class="sw-role" style="color:#c5d9fb">Accents / Links</div>
+    </div>
+    <div class="swatch" style="background:#27AE60">
+      <div class="sw-name" style="color:#fff">Cleared Green</div>
+      <div class="sw-hex" style="color:#c5f0d5">#27AE60</div>
+      <div class="sw-role" style="color:#c5f0d5">Success / Removed</div>
+    </div>
+  </div>
+
+  <div class="section-title">Primary Logo — B2 Struck Record</div>
+  <div class="logo-grid">
+    <div class="logo-row">
+      <div class="logo-block" style="background:#0D1B2E; flex:1">
+        <svg width="280" height="70" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="12" width="34" height="44" rx="5" fill="none" stroke="#2D6BE4" stroke-width="2.5"/>
+          <polygon points="32,12 44,12 44,26 32,26" fill="#0D1B2E"/>
+          <polyline points="32,12 44,26 32,26" fill="none" stroke="#2D6BE4" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="16" y1="34" x2="40" y2="34" stroke="#4a7fa8" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="42" x2="40" y2="42" stroke="#4a7fa8" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="50" x2="30" y2="50" stroke="#4a7fa8" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="10" y1="12" x2="44" y2="56" stroke="#E63946" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="44" y1="12" x2="10" y2="56" stroke="#E63946" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="62" y="55" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#FFFFFF" letter-spacing="1.5">EXPUNGE</text>
+        </svg>
+        <span class="logo-label" style="color:#4a7fa8">Wordmark — dark background</span>
+      </div>
+    </div>
+    <div class="logo-row">
+      <div class="logo-block" style="background:#F4F6F9; border:0.5px solid #ddd; flex:1">
+        <svg width="280" height="70" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="12" width="34" height="44" rx="5" fill="none" stroke="#2D6BE4" stroke-width="2.5"/>
+          <polygon points="32,12 44,12 44,26 32,26" fill="#F4F6F9"/>
+          <polyline points="32,12 44,26 32,26" fill="none" stroke="#2D6BE4" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="16" y1="34" x2="40" y2="34" stroke="#1A2E4A" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="42" x2="40" y2="42" stroke="#1A2E4A" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="50" x2="30" y2="50" stroke="#1A2E4A" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="10" y1="12" x2="44" y2="56" stroke="#E63946" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="44" y1="12" x2="10" y2="56" stroke="#E63946" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="62" y="55" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#0D1B2E" letter-spacing="1.5">EXPUNGE</text>
+        </svg>
+        <span class="logo-label" style="color:#888">Wordmark — light background</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Alternate Logo — B3 Shield</div>
+  <div class="logo-grid">
+    <div class="logo-row">
+      <div class="logo-block" style="background:#0D1B2E; flex:1">
+        <svg width="280" height="70" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg">
+          <path d="M26 10 L48 10 L48 44 Q48 60 26 70 Q4 60 4 44 L4 10 Z" fill="#1A2E4A" stroke="#2D6BE4" stroke-width="2.5"/>
+          <line x1="13" y1="26" x2="39" y2="26" stroke="#E63946" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="13" y1="38" x2="34" y2="38" stroke="#E63946" stroke-width="3" stroke-linecap="round"/>
+          <line x1="13" y1="50" x2="39" y2="50" stroke="#E63946" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="13" y1="26" x2="13" y2="50" stroke="#E63946" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="62" y="55" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#FFFFFF" letter-spacing="1.5">EXPUNGE</text>
+        </svg>
+        <span class="logo-label" style="color:#4a7fa8">Shield — dark background</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Usage Rules</div>
+  <div class="rule-grid">
+    <div class="rule-card">
+      <div class="rule-title">Strike Red — CTA only</div>
+      <div class="rule-body">Red appears exclusively on primary call-to-action buttons. Anywhere else it is diluted and loses psychological impact. One button, maximum contrast.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">Never stretch the mark</div>
+      <div class="rule-body">Scale the logo uniformly. The icon and wordmark must maintain their proportional relationship at all times.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">Minimum clear space</div>
+      <div class="rule-body">Maintain clear space equal to the height of the "E" in EXPUNGE on all four sides of the logo mark.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">Cleared Green = outcomes</div>
+      <div class="rule-body">#27AE60 is reserved for resolved dispute states: Removed, Cleared, Confirmed. Never use it on CTAs or decorative elements.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">No gradients or shadows</div>
+      <div class="rule-body">Flat surfaces only across all brand assets. Gradients undermine the legal authority and professional credibility the brand requires.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">Approved backgrounds</div>
+      <div class="rule-body">Logo renders on: Sovereign Navy (#0D1B2E), Cloud White (#F4F6F9), or transparent. No other background colors.</div>
+    </div>
+  </div>
+
+  <div class="section-title">Typography</div>
+  <div class="type-row">
+    <span class="type-spec">Wordmark / Display</span>
+    <span style="font-family:Georgia,serif; font-size:28px; font-weight:700; color:#0D1B2E">Georgia Serif Bold</span>
+  </div>
+  <div class="type-row">
+    <span class="type-spec">Body / UI Text</span>
+    <span style="font-family:Arial,sans-serif; font-size:16px; color:#0D1B2E">System Sans-Serif — clean, clinical, high legibility</span>
+  </div>
+  <div class="type-row">
+    <span class="type-spec">Code / Data</span>
+    <span style="font-family:'Courier New',monospace; font-size:14px; color:#2D6BE4">Monospace — FCRA §611, §623, §605</span>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>Expunge Brand Identity v1.0 — Chaotically Organized AI, LLC — Confidential</p>
+</div>
+
+</body>
+</html>
