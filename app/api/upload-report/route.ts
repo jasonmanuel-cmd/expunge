@@ -130,18 +130,7 @@ async function extractPdfText(file: File): Promise<string> {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
     
-    // Try pdf-parse first
-    try {
-      const pdfParse = (await import('pdf-parse')).default
-      const data = await pdfParse(buffer)
-      if (data.text && data.text.trim()) {
-        return data.text
-      }
-    } catch {
-      // pdf-parse not available or failed
-    }
-
-    // Fallback: try pdfjs-dist
+    // Use pdfjs-dist for PDF text extraction
     try {
       const pdfjsLib = await import('pdfjs-dist')
       const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) })
