@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { processOutcome } from '@/lib/agents/learning-agent'
+import { sendOutcomeEmail } from '@/lib/email'
 import type { DisputeType, Bureau, OutcomeResult } from '@/lib/types'
 
 export async function POST(req: NextRequest) {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     const { data: dispatch } = await supabase
       .from('dispatch_records')
-      .select('*, letters(dispute_item_id, content, dispute_items(cases(user_id)))')
+      .select('*, letters(dispute_item_id, content, dispute_items!inner(cases!inner(user_id, profiles(full_name, email))))')
       .eq('id', dispatchRecordId)
       .single()
 
@@ -57,6 +58,24 @@ export async function POST(req: NextRequest) {
         .from('dispute_items')
         .update({ status: statusMap[result] || 'received' })
         .eq('id', dispatch.letters.dispute_item_id)
+    }
+
+    // Send email notification to user
+    const dipItem = Array.isArray(dispatch.letters?.dispute_items)
+      ? dispatch.letters?.dispute_items[0]
+      : dispatch.letters?.dispute_items
+    const userEmail = dipItem?.cases?.profiles?.email
+    const userName = dipItem?.cases?.profiles?.full_name
+
+    if (userEmail) {
+      sendOutcomeEmail(
+        userEmail,
+        userName ?? 'User',
+        dipItem?.account_name ?? 'Account',
+        dispatch.bureau,
+        result,
+        dipItem?.cases?.id ?? ''
+      ).catch(() => {})
     }
 
     // Pull full dispute context for learning agent
@@ -109,8 +128,17 @@ export async function POST(req: NextRequest) {
 }
 
 // GET: Check for expired 30-day windows and mark as no_response
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // If CRON_SECRET is set, verify it (Vercel cron sends it automatically)
+    const cronSecret = process.env.CRON_SECRET
+    if (cronSecret) {
+      const authHeader = request.headers.get('authorization')
+      if (authHeader !== `Bearer ${cronSecret}`) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    }
+
     const supabase = createServiceClient()
     const now = new Date().toISOString()
 
@@ -131,18 +159,25 @@ export async function GET() {
         ids.map((id: string) => ({ dispatch_record_id: id, result: 'no_response' }))
       )
 
-      // Feed no_response outcomes to learning agent
+      // Feed no_response outcomes to learning agent + send email notifications
       const { data: expiredRecords } = await supabase
         .from('dispatch_records')
         .select(`
-          id, bureau, sent_at,
-          letters(content, dispute_items(type, legal_basis, round, account_name, amount, specialist_output))
+          id, bureau, sent_at, letter_id,
+          letters!inner(
+            content, dispute_item_id,
+            dispute_items!inner(
+              type, legal_basis, round, account_name, amount, specialist_output,
+              cases!inner(user_id, profiles(full_name, email))
+            )
+          )
         `)
         .in('id', ids)
 
       for (const record of expiredRecords ?? []) {
         const letter = Array.isArray(record.letters) ? record.letters[0] : record.letters
-        const item = letter && (Array.isArray(letter.dispute_items) ? letter.dispute_items[0] : letter.dispute_items)
+        if (!letter) continue
+        const item = letter.dispute_items
         if (!item) continue
 
         const sentAt = new Date(record.sent_at)
@@ -162,6 +197,21 @@ export async function GET() {
           accountName: item.account_name,
           amount: item.amount,
         }).catch((err) => console.error('Learning agent (no_response) error:', err))
+
+        // Send email notification if we have user info
+        const profile = item.cases?.profiles
+        if (profile?.email) {
+          const caseId = item.cases?.id ?? ''
+          const { sendNoResponseEmail } = await import('@/lib/email')
+          sendNoResponseEmail(
+            profile.email,
+            profile.full_name ?? 'User',
+            item.account_name,
+            record.bureau,
+            caseId,
+            letter.dispute_item_id
+          ).catch(() => {})
+        }
       }
     }
 

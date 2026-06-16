@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/outcome-tracker",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}

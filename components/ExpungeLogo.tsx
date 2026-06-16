@@ -1,20 +1,25 @@
 import Image from 'next/image'
 
 type Variant = 'primary' | 'shield' | 'icon'
-type Theme = 'dark' | 'light'
 
 interface Props {
   variant?: Variant
-  theme?: Theme
+  light?: boolean
   className?: string
   width?: number
   height?: number
 }
 
-const SRC_MAP: Record<Variant, Record<Theme, string>> = {
-  primary: { dark: '/logo.svg', light: '/logo-light.svg' },
-  shield: { dark: '/shield.svg', light: '/shield.svg' },
-  icon: { dark: '/icon.svg', light: '/icon.svg' },
+const SRC_MAP: Record<Variant, string> = {
+  primary: '/logo.svg',
+  shield: '/shield.svg',
+  icon: '/icon.svg',
+}
+
+const SRC_MAP_LIGHT: Record<Variant, string> = {
+  primary: '/logo-light.svg',
+  shield: '/shield.svg',
+  icon: '/icon.svg',
 }
 
 const DIMS: Record<Variant, { w: number; h: number }> = {
@@ -23,8 +28,8 @@ const DIMS: Record<Variant, { w: number; h: number }> = {
   icon: { w: 80, h: 80 },
 }
 
-export default function ExpungeLogo({ variant = 'primary', theme = 'dark', className, width, height }: Props) {
-  const src = SRC_MAP[variant][theme]
+export default function ExpungeLogo({ variant = 'primary', light = false, className, width, height }: Props) {
+  const src = light ? SRC_MAP_LIGHT[variant] : SRC_MAP[variant]
   const dims = DIMS[variant]
 
   return (

@@ -4,23 +4,49 @@ import { runOrchestrator } from '@/lib/agents/orchestrator'
 import { routeCases } from '@/lib/agents/case-router'
 import { runSpecialistAgent } from '@/lib/agents/specialists'
 import { generateLetter } from '@/lib/agents/letter-bot'
+import { sendLettersReadyEmail } from '@/lib/email'
 import type { Bureau } from '@/lib/types'
+
+// Simple in-memory rate limit (resets on deploy — use Redis for production)
+const RATE_LIMIT_WINDOW = 60_000 // 1 minute
+const RATE_LIMIT_MAX = 5 // max requests per window per user
+const rateMap = new Map<string, { count: number; resetAt: number }>()
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now()
+  const entry = rateMap.get(userId)
+  if (!entry || now > entry.resetAt) {
+    rateMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW })
+    return true
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false
+  entry.count++
+  return true
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { caseId, userId: bodyUserId } = body
 
+    // Rate limit check
+    const supabase = createServiceClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (!checkRateLimit(user.id)) {
+      return NextResponse.json({ error: 'Too many requests. Please wait a minute.' }, { status: 429 })
+    }
+
     if (!caseId) {
       return NextResponse.json({ error: 'caseId is required' }, { status: 400 })
     }
 
-    const supabase = createServiceClient()
-
     // Fetch the case and verify ownership
     const { data: caseData, error: caseError } = await supabase
       .from('cases')
-      .select('*, profiles(full_name, email)')
+      .select('*, profiles(full_name, email, address_line1, address_line2, city, state, zip_code, ssn_last4, date_of_birth)')
       .eq('id', caseId)
       .single()
 
@@ -35,6 +61,19 @@ export async function POST(req: NextRequest) {
 
     if (!caseData.credit_report_text) {
       return NextResponse.json({ error: 'No credit report text found' }, { status: 400 })
+    }
+
+    // Check that the user has completed their profile (address and DOB are required)
+    const profile = caseData.profiles
+    if (!profile?.address_line1 || !profile?.city || !profile?.state || !profile?.zip_code || !profile?.ssn_last4 || !profile?.date_of_birth) {
+      return NextResponse.json(
+        {
+          error: 'Please complete your profile before uploading a credit report',
+          profile_completion_url: '/consumer/profile/step2',
+          code: 'PROFILE_INCOMPLETE',
+        },
+        { status: 400 }
+      )
     }
 
     await supabase.from('cases').update({ status: 'analyzing' }).eq('id', caseId)
@@ -74,14 +113,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to insert dispute items' }, { status: 500 })
     }
 
-    const consumerName = caseData.profiles?.full_name || 'Consumer'
+    // Build full consumer data from profile
+    const consumerName = profile?.full_name || 'Consumer'
+
+    const addressParts = [
+      profile.address_line1,
+      profile.address_line2,
+      profile.city,
+      `${profile.state} ${profile.zip_code}`,
+    ].filter(Boolean)
+    const fullAddress = addressParts.join(', ')
+
+    // Format DOB as MM/DD/YYYY
+    const dobDate = new Date(profile.date_of_birth!)
+    const formattedDob = `${String(dobDate.getMonth() + 1).padStart(2, '0')}/${String(dobDate.getDate()).padStart(2, '0')}/${dobDate.getFullYear()}`
+
     const consumer = {
       name: consumerName,
-      // TODO: Collect real consumer data (address, SSN last 4, DOB) in upload flow
-      // Currently using placeholders — letters will need these filled in before mailing
-      address: '[Your Address]',
-      ssn_last4: '[SSN Last 4]',
-      dob: '[Date of Birth]',
+      address: fullAddress,
+      ssn_last4: profile.ssn_last4 || '',
+      dob: formattedDob,
     }
 
     // Step 4: Run specialist agents + generate letters (sorted by processing order)
@@ -135,6 +186,17 @@ export async function POST(req: NextRequest) {
     }
 
     await supabase.from('cases').update({ status: 'monitoring' }).eq('id', caseId)
+
+    // Send email notification
+    const userEmail = profile?.email
+    if (userEmail) {
+      sendLettersReadyEmail(
+        userEmail,
+        consumerName,
+        caseId,
+        orchestratorOutput.totalDisputableItems
+      ).catch(() => {})
+    }
 
     return NextResponse.json({ success: true, itemCount: orchestratorOutput.totalDisputableItems })
   } catch (err) {

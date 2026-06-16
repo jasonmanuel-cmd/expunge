@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'File too large. Maximum size is 25MB.' }, { status: 400 })
     }
 
-    setStatusMsg('Extracting text from file...')
+    console.log('[Upload] Extracting text from file...')
 
     // Extract text from file
     let extractedText = ''

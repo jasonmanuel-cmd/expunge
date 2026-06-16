@@ -159,6 +159,15 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                             )}
                             <span className="text-xs text-[#4a7fa8]">Round {letter.round}</span>
                           </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <a
+                              href={`/api/letters/${letter.id}/pdf`}
+                              className="text-xs bg-[#2D6BE4]/10 text-[#2D6BE4] border border-[#2D6BE4]/30 px-3 py-1 rounded-full hover:bg-[#2D6BE4]/20 transition"
+                              target="_blank"
+                            >
+                              Download PDF
+                            </a>
+                          </div>
                           <pre className="text-xs text-[#4a7fa8] whitespace-pre-wrap font-mono leading-relaxed max-h-48 overflow-y-auto">
                             {letter.content}
                           </pre>

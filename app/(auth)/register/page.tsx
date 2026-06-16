@@ -11,6 +11,13 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<'consumer' | 'partner'>('consumer')
+  const [addressLine1, setAddressLine1] = useState('')
+  const [addressLine2, setAddressLine2] = useState('')
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('')
+  const [zipCode, setZipCode] = useState('')
+  const [ssnLast4, setSsnLast4] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -20,10 +27,22 @@ export default function RegisterPage() {
     setError('')
 
     const supabase = createClient()
-    const { error: authError } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName, role } },
+      options: {
+        data: {
+          full_name: fullName,
+          role,
+          address_line1: addressLine1,
+          address_line2: addressLine2 || null,
+          city,
+          state,
+          zip_code: zipCode,
+          ssn_last4: ssnLast4,
+          date_of_birth: dateOfBirth,
+        },
+      },
     })
 
     if (authError) {
@@ -32,12 +51,29 @@ export default function RegisterPage() {
       return
     }
 
+    // Ensure profile row exists with all data (in case trigger hasn't fired yet)
+    if (authData?.user) {
+      await supabase.from('profiles').upsert({
+        id: authData.user.id,
+        email,
+        full_name: fullName,
+        role,
+        address_line1: addressLine1,
+        address_line2: addressLine2 || null,
+        city,
+        state,
+        zip_code: zipCode,
+        ssn_last4: ssnLast4,
+        date_of_birth: dateOfBirth,
+      }, { onConflict: 'id' })
+    }
+
     router.push(role === 'partner' ? '/partner/dashboard' : '/dashboard')
   }
 
   return (
-    <div className="min-h-screen bg-[#0D1B2E] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-[#0D1B2E] flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-lg">
         <div className="mb-10 flex justify-center">
           <Link href="/">
             <ExpungeLogo variant="primary" width={200} height={50} />
@@ -105,6 +141,102 @@ export default function RegisterPage() {
                 className="w-full bg-[#0D1B2E] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-[#4a7fa8] focus:outline-none focus:border-[#2D6BE4] transition"
                 placeholder="Min 8 characters"
               />
+            </div>
+
+            {/* Address section */}
+            <div className="pt-2 border-t border-white/10">
+              <h2 className="text-sm font-semibold text-white mb-3">Personal information for dispute letters</h2>
+              <p className="text-xs text-[#4a7fa8] mb-4">Required by credit bureaus to process your disputes. Stored encrypted.</p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-slate-300 mb-1.5">Address line 1 <span className="text-[#E63946]">*</span></label>
+                  <input
+                    type="text"
+                    value={addressLine1}
+                    onChange={(e) => setAddressLine1(e.target.value)}
+                    required
+                    className="w-full bg-[#0D1B2E] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-[#4a7fa8] focus:outline-none focus:border-[#2D6BE4] transition"
+                    placeholder="123 Main St"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-300 mb-1.5">Address line 2 <span className="text-[#4a7fa8] text-xs">(optional)</span></label>
+                  <input
+                    type="text"
+                    value={addressLine2}
+                    onChange={(e) => setAddressLine2(e.target.value)}
+                    className="w-full bg-[#0D1B2E] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-[#4a7fa8] focus:outline-none focus:border-[#2D6BE4] transition"
+                    placeholder="Apt 4B, Suite 200"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1.5">City <span className="text-[#E63946]">*</span></label>
+                    <input
+                      type="text"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      required
+                      className="w-full bg-[#0D1B2E] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-[#4a7fa8] focus:outline-none focus:border-[#2D6BE4] transition"
+                      placeholder="Los Angeles"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1.5">State <span className="text-[#E63946]">*</span></label>
+                    <input
+                      type="text"
+                      value={state}
+                      onChange={(e) => setState(e.target.value.toUpperCase())}
+                      required
+                      maxLength={2}
+                      minLength={2}
+                      pattern="[A-Za-z]{2}"
+                      className="w-full bg-[#0D1B2E] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-[#4a7fa8] focus:outline-none focus:border-[#2D6BE4] transition uppercase"
+                      placeholder="CA"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-300 mb-1.5">ZIP code <span className="text-[#E63946]">*</span></label>
+                  <input
+                    type="text"
+                    value={zipCode}
+                    onChange={(e) => setZipCode(e.target.value)}
+                    required
+                    pattern="[0-9]{5}(-[0-9]{4})?"
+                    className="w-full bg-[#0D1B2E] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-[#4a7fa8] focus:outline-none focus:border-[#2D6BE4] transition"
+                    placeholder="90210"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1.5">SSN (last 4) <span className="text-[#E63946]">*</span></label>
+                    <input
+                      type="password"
+                      value={ssnLast4}
+                      onChange={(e) => setSsnLast4(e.target.value)}
+                      required
+                      pattern="[0-9]{4}"
+                      maxLength={4}
+                      minLength={4}
+                      autoComplete="off"
+                      className="w-full bg-[#0D1B2E] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-[#4a7fa8] focus:outline-none focus:border-[#2D6BE4] transition"
+                      placeholder="••••"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1.5">Date of birth <span className="text-[#E63946]">*</span></label>
+                    <input
+                      type="date"
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      required
+                      className="w-full bg-[#0D1B2E] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-[#4a7fa8] focus:outline-none focus:border-[#2D6BE4] transition"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <button

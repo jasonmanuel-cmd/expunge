@@ -24,33 +24,35 @@ export default async function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D1B2E] text-white">
+    <div className="min-h-screen bg-[#F5F5F7] text-[#111827]">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-3">
-          <ExpungeLogo variant="primary" width={180} height={45} />
-        </Link>
-        <div className="flex items-center gap-4">
-          {user ? (
-            <Link href="/dashboard" className="text-sm text-[#4a7fa8] hover:text-white transition">Dashboard</Link>
-          ) : (
-            <>
-              <Link href="/login" className="text-sm text-[#4a7fa8] hover:text-white transition">Sign in</Link>
-              <Link href="/register" className="text-sm bg-[#E63946] hover:bg-[#c92e3a] transition px-5 py-2.5 rounded-lg font-bold text-white">Get started</Link>
-            </>
-          )}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#E5E7EB]">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+          <Link href="/" className="flex items-center gap-3">
+            <ExpungeLogo variant="primary" width={160} height={40} />
+          </Link>
+          <div className="flex items-center gap-4">
+            {user ? (
+              <Link href="/dashboard" className="text-sm text-[#6B7280] hover:text-[#111827] transition font-medium">Dashboard</Link>
+            ) : (
+              <>
+                <Link href="/login" className="text-sm text-[#6B7280] hover:text-[#111827] transition font-medium">Sign in</Link>
+                <Link href="/register" className="text-sm bg-[#F97316] hover:bg-[#EA580C] transition px-5 py-2.5 rounded-lg font-semibold text-white">Get started</Link>
+              </>
+            )}
+          </div>
         </div>
       </nav>
 
       <div className="max-w-6xl mx-auto px-8 py-20">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-[#2D6BE4]/10 border border-[#2D6BE4]/20 rounded-full px-4 py-1.5 text-sm text-[#2D6BE4] mb-6">
+          <div className="inline-flex items-center gap-2 bg-[#FFF7ED] border border-[#FED7AA] rounded-full px-4 py-1.5 text-sm text-[#F97316] font-medium mb-6">
             Simple, transparent pricing
           </div>
-          <h1 className="text-5xl font-bold mb-4">Disputes done. Records erased.</h1>
-          <p className="text-[#4a7fa8] text-xl max-w-2xl mx-auto">
-            Start free. Upgrade when you need the full arsenal.
+          <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 text-[#111827]">Simple, transparent pricing</h1>
+          <p className="text-[#6B7280] text-xl max-w-2xl mx-auto">
+            Start free. Upgrade when you want the full playbook.
           </p>
         </div>
 
@@ -63,27 +65,27 @@ export default async function PricingPage() {
             return (
               <div
                 key={key}
-                className={`relative rounded-2xl border p-6 flex flex-col ${
+                className={`relative rounded-2xl border p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 ${
                   isHighlighted
-                    ? 'bg-[#2D6BE4]/5 border-[#2D6BE4]/40'
-                    : 'bg-[#1A2E4A] border-white/10'
+                    ? 'bg-white border-[#F97316] shadow-xl shadow-orange-100'
+                    : 'bg-white border-[#E5E7EB] hover:border-[#D1D5DB]'
                 }`}
               >
                 {isHighlighted && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#E63946] text-white text-xs font-bold px-3 py-1 rounded-full">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#F97316] text-white text-xs font-bold px-4 py-1 rounded-full">
                     MOST POPULAR
                   </div>
                 )}
 
                 <div className="mb-6">
-                  <div className="text-sm font-medium text-[#4a7fa8] mb-1">{plan.name}</div>
-                  <div className="text-4xl font-bold mb-1">{plan.priceLabel}</div>
-                  <div className="text-[#4a7fa8] text-sm">{plan.description}</div>
+                  <div className="text-sm font-medium text-[#6B7280] mb-1">{plan.name}</div>
+                  <div className="text-4xl font-extrabold text-[#111827] mb-1">{plan.priceLabel}</div>
+                  <div className="text-[#6B7280] text-sm">{plan.description}</div>
                 </div>
 
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-slate-300">
+                    <li key={f} className="flex items-start gap-2 text-sm text-[#374151]">
                       {CHECK}
                       <span>{f}</span>
                     </li>
@@ -91,7 +93,7 @@ export default async function PricingPage() {
                 </ul>
 
                 {isCurrent ? (
-                  <div className="w-full text-center py-3 rounded-xl text-sm font-medium border border-white/20 text-[#4a7fa8]">
+                  <div className="w-full text-center py-3 rounded-xl text-sm font-medium border border-[#E5E7EB] text-[#6B7280]">
                     Current plan
                   </div>
                 ) : (
@@ -112,25 +114,25 @@ export default async function PricingPage() {
         </div>
 
         {/* FAQ strip */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-white/10 pt-16">
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-[#E5E7EB] pt-16">
           {[
-            { q: 'Can I cancel anytime?', a: 'Yes. Cancel from your billing page with one click. Your plan stays active until the end of the billing period.' },
-            { q: 'What payment methods?', a: 'All major credit and debit cards via Square — Visa, Mastercard, Amex, Discover. Secure, encrypted.' },
-            { q: 'Do letters really work?', a: 'Our AI applies 30 years of FCRA case law and real-world outcome data to every letter. Results vary by case but we optimize every dispute.' },
+            { q: 'Is this legal advice?', a: 'No. Expunge is software that helps you generate documents and instructions. We are not a law firm and do not provide legal advice. You decide which disputes to send.' },
+            { q: 'Will this hurt my credit score?', a: 'No. Filing disputes does not negatively impact your score. The worst outcome is the bureau verifies the item and it stays.' },
+            { q: 'What payment methods?', a: 'All major credit and debit cards via Square — Visa, Mastercard, Amex, Discover. Secure, encrypted. Cancel anytime.' },
           ].map(({ q, a }) => (
             <div key={q}>
-              <div className="font-semibold mb-2">{q}</div>
-              <div className="text-[#4a7fa8] text-sm leading-relaxed">{a}</div>
+              <div className="font-semibold mb-2 text-[#111827]">{q}</div>
+              <div className="text-[#6B7280] text-sm leading-relaxed">{a}</div>
             </div>
           ))}
         </div>
 
         {/* Legal footer */}
-        <div className="mt-12 text-center text-[#4a7fa8] text-xs">
+        <div className="mt-12 text-center text-[#9CA3AF] text-xs">
           By subscribing you agree to our{' '}
-          <Link href="/terms" className="text-slate-500 hover:text-slate-400 underline">Terms of Service</Link>
+          <Link href="/terms" className="text-[#6B7280] hover:text-[#374151] underline">Terms of Service</Link>
           {' '}and{' '}
-          <Link href="/privacy" className="text-slate-500 hover:text-slate-400 underline">Privacy Policy</Link>.
+          <Link href="/privacy" className="text-[#6B7280] hover:text-[#374151] underline">Privacy Policy</Link>.
           Expunge is not a law firm and does not provide legal advice.
         </div>
       </div>

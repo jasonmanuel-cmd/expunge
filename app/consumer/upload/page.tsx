@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -18,6 +18,24 @@ export default function UploadPage() {
   const [error, setError] = useState('')
   const [fileName, setFileName] = useState('')
   const [dragOver, setDragOver] = useState(false)
+  const [profileComplete, setProfileComplete] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) { router.push('/login'); return }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('address_line1, city, state, zip_code, ssn_last4, date_of_birth')
+        .eq('id', user.id)
+        .single()
+      const complete = !!(
+        profile?.address_line1 && profile?.city && profile?.state &&
+        profile?.zip_code && profile?.ssn_last4 && profile?.date_of_birth
+      )
+      setProfileComplete(complete)
+    })
+  }, [router])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = (file: File | null) => {
@@ -172,6 +190,21 @@ export default function UploadPage() {
             <p className="text-[#4a7fa8] mb-6">
               Upload your credit report file or paste the text below. We&apos;ll analyze it and identify all disputable items.
             </p>
+
+            {/* Profile completion banner */}
+            {profileComplete === false && (
+              <div className="bg-[#E63946]/10 border border-[#E63946]/30 rounded-xl px-4 py-3 text-sm mb-6 flex items-center justify-between">
+                <span className="text-[#E63946]">
+                  <strong>Action required:</strong> Please complete your profile before uploading. We need your address and date of birth to generate dispute letters.
+                </span>
+                <Link
+                  href="/consumer/profile/step2"
+                  className="bg-[#E63946] hover:bg-[#c92e3a] text-white px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap ml-4"
+                >
+                  Complete profile
+                </Link>
+              </div>
+            )}
 
             {/* Mode toggle */}
             <div className="flex gap-2 mb-6">
