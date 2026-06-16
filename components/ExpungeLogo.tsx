@@ -1,5 +1,3 @@
-import Image from 'next/image'
-
 type Variant = 'primary' | 'shield' | 'icon'
 
 interface Props {
@@ -31,15 +29,17 @@ const DIMS: Record<Variant, { w: number; h: number }> = {
 export default function ExpungeLogo({ variant = 'primary', light = false, className, width, height }: Props) {
   const src = light ? SRC_MAP_LIGHT[variant] : SRC_MAP[variant]
   const dims = DIMS[variant]
+  const w = width ?? dims.w
+  const h = height ?? dims.h
 
   return (
-    <Image
+    <img
       src={src}
       alt="Expunge"
-      width={width ?? dims.w}
-      height={height ?? dims.h}
+      width={w}
+      height={h}
       className={className}
-      priority
+      style={{ display: 'inline-block', verticalAlign: 'middle' }}
     />
   )
 }

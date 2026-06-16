@@ -15,7 +15,7 @@ export default function HomePage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#E5E7EB]">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <ExpungeLogo variant="primary" width={160} height={40} />
+            <ExpungeLogo variant="primary" width={160} height={40} light />
           </Link>
           <div className="hidden sm:flex items-center gap-8">
             <Link href="#how-it-works" className="text-sm text-[#6B7280] hover:text-[#111827] transition font-medium">How it works</Link>
@@ -483,7 +483,7 @@ export default function HomePage() {
       <footer className="border-t border-[#E5E7EB] py-10 px-6 bg-white">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <ExpungeLogo variant="primary" width={130} height={32} />
+            <ExpungeLogo variant="primary" width={130} height={32} light />
           </div>
           <div className="flex items-center gap-6 text-sm text-[#9CA3AF]">
             <Link href="/terms" className="hover:text-[#6B7280] transition">Terms</Link>
