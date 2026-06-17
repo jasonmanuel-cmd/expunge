@@ -73,7 +73,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-lg">
           <div className="mb-10 flex justify-center">
             <Link href="/">
-              <ExpungeLogo variant="primary" width={200} height={50} />
+              <ExpungeLogo variant="primary" width={200} height={50} light />
             </Link>
           </div>
           <div className="bg-[#1A2E4A] border border-white/10 rounded-2xl p-8 text-center">
@@ -102,7 +102,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg">
         <div className="mb-10 flex justify-center">
           <Link href="/">
-            <ExpungeLogo variant="primary" width={200} height={50} />
+            <ExpungeLogo variant="primary" width={200} height={50} light />
           </Link>
         </div>
 

@@ -54,7 +54,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <header className="border-b border-white/10 px-8 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <ExpungeLogo variant="primary" width={160} height={40} />
+          <ExpungeLogo variant="primary" width={160} height={40} light />
         </Link>
         <div className="flex items-center gap-4">
           <Link href="/billing" className="text-sm text-[#4a7fa8] hover:text-white transition">Billing</Link>

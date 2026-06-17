@@ -56,7 +56,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="mb-10 flex justify-center">
           <Link href="/">
-            <ExpungeLogo variant="primary" width={200} height={50} />
+            <ExpungeLogo variant="primary" width={200} height={50} light />
           </Link>
         </div>
 

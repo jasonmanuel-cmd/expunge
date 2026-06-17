@@ -6,7 +6,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-[#0D1B2E] text-white">
       <header className="border-b border-white/10 px-8 py-5">
         <Link href="/" className="flex items-center gap-3">
-          <ExpungeLogo variant="primary" width={160} height={40} />
+          <ExpungeLogo variant="primary" width={160} height={40} light />
         </Link>
       </header>
 

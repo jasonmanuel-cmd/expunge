@@ -46,7 +46,7 @@ export default async function PartnerDashboardPage() {
     <div className="min-h-screen bg-[#0D1B2E] text-white">
       <header className="border-b border-white/10 px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <ExpungeLogo variant="primary" width={160} height={40} />
+          <ExpungeLogo variant="primary" width={160} height={40} light />
           <span className="ml-2 text-xs bg-[#2D6BE4]/20 text-[#2D6BE4] px-2 py-0.5 rounded-full">Partner</span>
         </div>
         <span className="text-[#4a7fa8] text-sm">{profile?.full_name || user.email}</span>
