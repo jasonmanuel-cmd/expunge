@@ -143,55 +143,61 @@ export async function POST(req: NextRequest) {
       dob: formattedDob,
     }
 
-    // Step 4: Run specialist agents + generate letters (sorted by processing order)
-    const sortedRouted = [...routedItems].sort((a, b) => a.processingOrder - b.processingOrder)
+    // Step 4: Run specialist agents + generate letters.
+    // Each item (specialist + its bureau letters) runs concurrently, and the
+    // bureau letters within an item run concurrently too — so total time is
+    // ~the slowest single item rather than the sum of every Claude call. This
+    // keeps the whole pipeline well under the function timeout.
+    await Promise.all(
+      routedItems.map(async (routed) => {
+        const item = orchestratorOutput.items[routed.itemIndex]
+        const dbItem = insertedItems[routed.itemIndex]
+        if (!item || !dbItem) return
 
-    for (const routed of sortedRouted) {
-      const item = orchestratorOutput.items[routed.itemIndex]
-      const dbItem = insertedItems[routed.itemIndex]
-      if (!dbItem) continue
+        const specialistOutput = await runSpecialistAgent(item, consumerName)
+        await supabase
+          .from('dispute_items')
+          .update({ specialist_output: specialistOutput, status: 'letter_drafted' })
+          .eq('id', dbItem.id)
 
-      const specialistOutput = await runSpecialistAgent(item, consumerName)
-      await supabase
-        .from('dispute_items')
-        .update({ specialist_output: specialistOutput, status: 'letter_drafted' })
-        .eq('id', dbItem.id)
+        const bureaus: Bureau[] =
+          item.bureau === 'all'
+            ? ['equifax', 'experian', 'transunion']
+            : [item.bureau as Bureau]
 
-      const bureaus: Bureau[] =
-        item.bureau === 'all'
-          ? ['equifax', 'experian', 'transunion']
-          : [item.bureau as Bureau]
+        await Promise.all(
+          bureaus.map(async (bureau) => {
+            const letterContent = await generateLetter(item, specialistOutput, consumer, bureau, 1)
 
-      for (const bureau of bureaus) {
-        const letterContent = await generateLetter(item, specialistOutput, consumer, bureau, 1)
+            const { data: letter } = await supabase
+              .from('letters')
+              .insert({ dispute_item_id: dbItem.id, bureau, content: letterContent, round: 1 })
+              .select()
+              .single()
 
-        const { data: letter } = await supabase
-          .from('letters')
-          .insert({ dispute_item_id: dbItem.id, bureau, content: letterContent, round: 1 })
-          .select()
-          .single()
+            if (letter) {
+              const sentAt = new Date()
+              const responseDueAt = new Date(sentAt)
+              responseDueAt.setDate(responseDueAt.getDate() + 30)
 
-        if (letter) {
-          const sentAt = new Date()
-          const responseDueAt = new Date(sentAt)
-          responseDueAt.setDate(responseDueAt.getDate() + 30)
-
-          await supabase.from('dispatch_records').insert({
-            letter_id: letter.id,
-            bureau,
-            tracking_number: `EX-${Date.now()}-${bureau.slice(0, 3).toUpperCase()}`,
-            status: 'sent',
-            sent_at: sentAt.toISOString(),
-            response_due_at: responseDueAt.toISOString(),
+              await supabase.from('dispatch_records').insert({
+                letter_id: letter.id,
+                bureau,
+                tracking_number: `EX-${Date.now()}-${bureau.slice(0, 3).toUpperCase()}`,
+                status: 'sent',
+                sent_at: sentAt.toISOString(),
+                response_due_at: responseDueAt.toISOString(),
+              })
+            }
           })
-        }
-      }
+        )
 
-      await supabase
-        .from('dispute_items')
-        .update({ status: 'dispatched' })
-        .eq('id', dbItem.id)
-    }
+        await supabase
+          .from('dispute_items')
+          .update({ status: 'dispatched' })
+          .eq('id', dbItem.id)
+      })
+    )
 
     await supabase.from('cases').update({ status: 'monitoring' }).eq('id', caseId)
 
