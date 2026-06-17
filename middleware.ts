@@ -41,8 +41,21 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
+
+  // Safety net: if a confirmation / OAuth link lands anywhere other than the
+  // callback with a ?code (e.g. Supabase Site URL points at "/"), forward it
+  // to /auth/callback so the session can still be exchanged.
+  const code = request.nextUrl.searchParams.get('code')
+  if (code && pathname !== '/auth/callback') {
+    const callbackUrl = new URL('/auth/callback', request.url)
+    callbackUrl.searchParams.set('code', code)
+    const next = request.nextUrl.searchParams.get('next')
+    if (next) callbackUrl.searchParams.set('next', next)
+    return NextResponse.redirect(callbackUrl)
+  }
+
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Redirect authenticated users away from auth pages
   if (user && AUTH_PATHS.some((p) => pathname.startsWith(p))) {

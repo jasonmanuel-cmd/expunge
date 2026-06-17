@@ -29,7 +29,7 @@ export default async function PricingPage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#E5E7EB]">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <ExpungeLogo variant="primary" width={160} height={40} light />
+            <ExpungeLogo variant="primary" width={160} height={40} />
           </Link>
           <div className="flex items-center gap-4">
             {user ? (
