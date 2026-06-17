@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { runOrchestrator } from '@/lib/agents/orchestrator'
 import { routeCases } from '@/lib/agents/case-router'
 import { runSpecialistAgent } from '@/lib/agents/specialists'
 import { generateLetter } from '@/lib/agents/letter-bot'
 import { sendLettersReadyEmail } from '@/lib/email'
 import type { Bureau } from '@/lib/types'
+
+// The full pipeline makes many sequential Claude calls (orchestrator +
+// per-item specialist + per-bureau letters), so allow up to 5 minutes.
+export const maxDuration = 300
 
 // Simple in-memory rate limit (resets on deploy — use Redis for production)
 const RATE_LIMIT_WINDOW = 60_000 // 1 minute
@@ -27,14 +31,18 @@ function checkRateLimit(userId: string): boolean {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { caseId, userId: bodyUserId } = body
+    const { caseId } = body
 
-    // Rate limit check
-    const supabase = createServiceClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // Authenticate the request using the user's session cookie.
+    // (Must use the cookie-aware client — the service client has no session.)
+    const authClient = await createClient()
+    const { data: { user } } = await authClient.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Service client for privileged DB reads/writes below.
+    const supabase = createServiceClient()
     if (!checkRateLimit(user.id)) {
       return NextResponse.json({ error: 'Too many requests. Please wait a minute.' }, { status: 429 })
     }
@@ -54,8 +62,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 })
     }
 
-    // If bodyUserId provided, verify it matches the case owner
-    if (bodyUserId && bodyUserId !== caseData.user_id) {
+    // Ownership: the authenticated user must own this case.
+    if (caseData.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
