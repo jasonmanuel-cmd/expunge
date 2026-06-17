@@ -11,22 +11,44 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [needsConfirm, setNeedsConfirm] = useState(false)
+  const [resent, setResent] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setNeedsConfirm(false)
+    setResent(false)
 
     const supabase = createClient()
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
 
     if (authError) {
       setError(authError.message)
+      if (authError.message.toLowerCase().includes('not confirmed')) {
+        setNeedsConfirm(true)
+      }
       setLoading(false)
       return
     }
 
     router.push('/dashboard')
+  }
+
+  async function handleResend() {
+    setResent(false)
+    const supabase = createClient()
+    const { error: resendError } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    })
+    if (resendError) {
+      setError(resendError.message)
+      return
+    }
+    setResent(true)
   }
 
   return (
@@ -45,6 +67,25 @@ export default function LoginPage() {
           {error && (
             <div className="bg-[#E63946]/10 border border-[#E63946]/30 text-[#E63946] rounded-lg px-4 py-3 text-sm mb-4">
               {error}
+            </div>
+          )}
+
+          {needsConfirm && (
+            <div className="bg-[#2D6BE4]/10 border border-[#2D6BE4]/30 text-[#4a7fa8] rounded-lg px-4 py-3 text-sm mb-4">
+              {resent ? (
+                <span className="text-white">Confirmation email resent. Check your inbox.</span>
+              ) : (
+                <>
+                  Your email isn&apos;t confirmed yet.{' '}
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    className="text-[#2D6BE4] hover:text-white underline transition"
+                  >
+                    Resend confirmation email
+                  </button>
+                </>
+              )}
             </div>
           )}
 

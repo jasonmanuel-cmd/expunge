@@ -20,17 +20,20 @@ export default function RegisterPage() {
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
 
+    const next = role === 'partner' ? '/partner/dashboard' : '/dashboard'
     const supabase = createClient()
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
         data: {
           full_name: fullName,
           role,
@@ -51,24 +54,47 @@ export default function RegisterPage() {
       return
     }
 
-    // Ensure profile row exists with all data (in case trigger hasn't fired yet)
-    if (authData?.user) {
-      await supabase.from('profiles').upsert({
-        id: authData.user.id,
-        email,
-        full_name: fullName,
-        role,
-        address_line1: addressLine1,
-        address_line2: addressLine2 || null,
-        city,
-        state,
-        zip_code: zipCode,
-        ssn_last4: ssnLast4,
-        date_of_birth: dateOfBirth,
-      }, { onConflict: 'id' })
+    // The DB trigger (handle_new_user) creates the profile row with all the
+    // metadata above. When email confirmation is enabled there is no session
+    // yet, so show the "check your inbox" screen. When it's disabled a session
+    // exists and we can go straight to the dashboard.
+    if (authData?.session) {
+      router.push(next)
+      return
     }
 
-    router.push(role === 'partner' ? '/partner/dashboard' : '/dashboard')
+    setEmailSent(true)
+    setLoading(false)
+  }
+
+  if (emailSent) {
+    return (
+      <div className="min-h-screen bg-[#0D1B2E] flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-lg">
+          <div className="mb-10 flex justify-center">
+            <Link href="/">
+              <ExpungeLogo variant="primary" width={200} height={50} />
+            </Link>
+          </div>
+          <div className="bg-[#1A2E4A] border border-white/10 rounded-2xl p-8 text-center">
+            <h1 className="text-2xl font-bold text-white mb-3">Check your inbox</h1>
+            <p className="text-[#4a7fa8] text-sm mb-2">
+              We sent a confirmation link to <span className="text-white font-medium">{email}</span>.
+            </p>
+            <p className="text-[#4a7fa8] text-sm mb-6">
+              Click it to verify your account, then you&apos;ll be taken to your dashboard.
+              The link may take a minute to arrive — check spam too.
+            </p>
+            <Link
+              href="/login"
+              className="inline-block w-full bg-[#2D6BE4] hover:bg-[#245bc4] transition py-3 rounded-lg font-bold text-white"
+            >
+              Go to sign in
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
