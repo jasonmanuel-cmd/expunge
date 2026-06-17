@@ -3,16 +3,16 @@ import ExpungeLogo from '@/components/ExpungeLogo'
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#0D1B2E] text-white">
-      <header className="border-b border-white/10 px-8 py-5">
+    <div className="min-h-screen bg-[#F5F5F7] text-[#111827]">
+      <header className="border-b border-[#E5E7EB] px-8 py-5">
         <Link href="/" className="flex items-center gap-3">
-          <ExpungeLogo variant="primary" width={160} height={40} light />
+          <ExpungeLogo variant="primary" width={160} height={40} />
         </Link>
       </header>
 
       <div className="max-w-3xl mx-auto px-8 py-16">
         <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
-        <p className="text-[#4a7fa8] text-sm mb-10">Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <p className="text-[#6B7280] text-sm mb-10">Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
 
         {[
           {
@@ -57,8 +57,8 @@ export default function PrivacyPage() {
           },
         ].map(({ title, body }) => (
           <div key={title} className="mb-8">
-            <h2 className="text-xl font-semibold mb-3 text-white">{title}</h2>
-            <p className="text-[#4a7fa8] leading-relaxed">{body}</p>
+            <h2 className="text-xl font-semibold mb-3 text-[#111827]">{title}</h2>
+            <p className="text-[#6B7280] leading-relaxed">{body}</p>
           </div>
         ))}
       </div>

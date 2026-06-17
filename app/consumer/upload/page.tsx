@@ -176,10 +176,10 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D1B2E] text-white flex flex-col">
-      <header className="border-b border-white/10 px-8 py-4 flex items-center gap-3">
+    <div className="min-h-screen bg-[#F5F5F7] text-[#111827] flex flex-col">
+      <header className="border-b border-[#E5E7EB] px-8 py-4 flex items-center gap-3">
         <Link href="/" className="flex items-center gap-3">
-          <ExpungeLogo variant="primary" width={160} height={40} light />
+          <ExpungeLogo variant="primary" width={160} height={40} />
         </Link>
       </header>
 
@@ -187,19 +187,19 @@ export default function UploadPage() {
         {step === 'upload' ? (
           <div className="w-full max-w-2xl">
             <h1 className="text-3xl font-bold mb-2">Upload credit report</h1>
-            <p className="text-[#4a7fa8] mb-6">
+            <p className="text-[#6B7280] mb-6">
               Upload your credit report file or paste the text below. We&apos;ll analyze it and identify all disputable items.
             </p>
 
             {/* Profile completion banner */}
             {profileComplete === false && (
-              <div className="bg-[#E63946]/10 border border-[#E63946]/30 rounded-xl px-4 py-3 text-sm mb-6 flex items-center justify-between">
-                <span className="text-[#E63946]">
+              <div className="bg-[#F97316]/10 border border-[#F97316]/30 rounded-xl px-4 py-3 text-sm mb-6 flex items-center justify-between">
+                <span className="text-[#F97316]">
                   <strong>Action required:</strong> Please complete your profile before uploading. We need your address and date of birth to generate dispute letters.
                 </span>
                 <Link
                   href="/consumer/profile/step2"
-                  className="bg-[#E63946] hover:bg-[#c92e3a] text-white px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap ml-4"
+                  className="bg-[#F97316] hover:bg-[#EA580C] text-white px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap ml-4"
                 >
                   Complete profile
                 </Link>
@@ -213,8 +213,8 @@ export default function UploadPage() {
                 onClick={() => setMode('file')}
                 className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition ${
                   mode === 'file'
-                    ? 'bg-[#2D6BE4] text-white'
-                    : 'bg-white/5 text-[#4a7fa8] hover:bg-white/10'
+                    ? 'bg-[#F97316] text-white'
+                    : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#F3F4F6]'
                 }`}
               >
                 📎 Upload file
@@ -224,8 +224,8 @@ export default function UploadPage() {
                 onClick={() => setMode('paste')}
                 className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition ${
                   mode === 'paste'
-                    ? 'bg-[#2D6BE4] text-white'
-                    : 'bg-white/5 text-[#4a7fa8] hover:bg-white/10'
+                    ? 'bg-[#F97316] text-white'
+                    : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#F3F4F6]'
                 }`}
               >
                 📝 Paste text
@@ -233,7 +233,7 @@ export default function UploadPage() {
             </div>
 
             {error && (
-              <div className="bg-[#E63946]/10 border border-[#E63946]/30 text-[#E63946] rounded-lg px-4 py-3 text-sm mb-4">
+              <div className="bg-[#F97316]/10 border border-[#F97316]/30 text-[#F97316] rounded-lg px-4 py-3 text-sm mb-4">
                 {error}
               </div>
             )}
@@ -248,8 +248,8 @@ export default function UploadPage() {
                   onClick={() => fileInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition ${
                     dragOver
-                      ? 'border-[#2D6BE4] bg-[#2D6BE4]/10'
-                      : 'border-white/20 hover:border-white/40 bg-[#1A2E4A]/50'
+                      ? 'border-[#F97316] bg-[#F97316]/10'
+                      : 'border-white/20 hover:border-white/40 bg-[#FFFFFF]/50'
                   }`}
                 >
                   <input
@@ -262,13 +262,13 @@ export default function UploadPage() {
                   <div className="text-4xl mb-3">📄</div>
                   {fileName ? (
                     <>
-                      <p className="text-white font-semibold mb-1">{fileName}</p>
-                      <p className="text-[#4a7fa8] text-sm">Click or drop to change file</p>
+                      <p className="text-[#111827] font-semibold mb-1">{fileName}</p>
+                      <p className="text-[#6B7280] text-sm">Click or drop to change file</p>
                     </>
                   ) : (
                     <>
-                      <p className="text-white font-semibold mb-1">Drop your file here or click to browse</p>
-                      <p className="text-[#4a7fa8] text-sm">Supports PDF, TXT, CSV, JSON, DOCX, PNG, JPG, TIFF (max 25MB)</p>
+                      <p className="text-[#111827] font-semibold mb-1">Drop your file here or click to browse</p>
+                      <p className="text-[#6B7280] text-sm">Supports PDF, TXT, CSV, JSON, DOCX, PNG, JPG, TIFF (max 25MB)</p>
                     </>
                   )}
                 </div>
@@ -276,25 +276,25 @@ export default function UploadPage() {
                 {/* Supported formats */}
                 <div className="flex flex-wrap gap-2">
                   {['PDF', 'TXT', 'CSV', 'JSON', 'DOCX', 'PNG', 'JPG', 'TIFF'].map(fmt => (
-                    <span key={fmt} className="text-xs bg-white/5 text-[#4a7fa8] px-2 py-1 rounded">{fmt}</span>
+                    <span key={fmt} className="text-xs bg-[#F3F4F6] text-[#6B7280] px-2 py-1 rounded">{fmt}</span>
                   ))}
                 </div>
 
-                <div className="bg-[#2D6BE4]/10 border border-[#2D6BE4]/20 rounded-xl px-4 py-3 text-sm text-[#2D6BE4]">
+                <div className="bg-[#F97316]/10 border border-[#F97316]/20 rounded-xl px-4 py-3 text-sm text-[#F97316]">
                   <strong>Privacy:</strong> Your report is analyzed and letters are generated immediately. Raw text is stored securely and used only for your dispute process.
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading || (!fileName && !reportText.trim())}
-                  className="w-full bg-[#E63946] hover:bg-[#c92e3a] disabled:opacity-50 disabled:cursor-not-allowed transition py-4 rounded-xl font-bold text-lg text-white"
+                  className="w-full bg-[#F97316] hover:bg-[#EA580C] disabled:opacity-50 disabled:cursor-not-allowed transition py-4 rounded-xl font-bold text-lg text-white"
                 >
                   {fileName ? `Upload ${fileName} & start disputes` : 'Select a file to continue'}
                 </button>
 
-                <p className="text-center text-[#4a7fa8] text-sm">
+                <p className="text-center text-[#6B7280] text-sm">
                   Prefer to paste?{' '}
-                  <button type="button" onClick={() => setMode('paste')} className="text-[#2D6BE4] hover:underline">
+                  <button type="button" onClick={() => setMode('paste')} className="text-[#F97316] hover:underline">
                     Switch to text paste
                   </button>
                 </p>
@@ -302,33 +302,33 @@ export default function UploadPage() {
             ) : (
               <form onSubmit={handlePasteSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-slate-300 mb-1.5">Credit report text</label>
+                  <label className="block text-sm text-[#374151] mb-1.5">Credit report text</label>
                   <textarea
                     value={reportText}
                     onChange={(e) => setReportText(e.target.value)}
                     required
                     rows={16}
-                    className="w-full bg-[#1A2E4A] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-[#4a7fa8] focus:outline-none focus:border-[#2D6BE4] transition font-mono text-sm resize-none"
+                    className="w-full bg-[#FFFFFF] border border-[#E5E7EB] rounded-xl px-4 py-3 text-white placeholder-[#6B7280] focus:outline-none focus:border-[#F97316] transition font-mono text-sm resize-none"
                     placeholder="Paste your full credit report here (from AnnualCreditReport.com or your credit monitoring service)..."
                   />
-                  <p className="text-[#4a7fa8] text-xs mt-1">{reportText.length.toLocaleString()} characters</p>
+                  <p className="text-[#6B7280] text-xs mt-1">{reportText.length.toLocaleString()} characters</p>
                 </div>
 
-                <div className="bg-[#2D6BE4]/10 border border-[#2D6BE4]/20 rounded-xl px-4 py-3 text-sm text-[#2D6BE4]">
+                <div className="bg-[#F97316]/10 border border-[#F97316]/20 rounded-xl px-4 py-3 text-sm text-[#F97316]">
                   <strong>Privacy:</strong> Your report is analyzed and letters are generated immediately. Raw text is stored securely and used only for your dispute process.
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading || !reportText.trim()}
-                  className="w-full bg-[#E63946] hover:bg-[#c92e3a] disabled:opacity-50 disabled:cursor-not-allowed transition py-4 rounded-xl font-bold text-lg text-white"
+                  className="w-full bg-[#F97316] hover:bg-[#EA580C] disabled:opacity-50 disabled:cursor-not-allowed transition py-4 rounded-xl font-bold text-lg text-white"
                 >
                   Analyze & start disputes
                 </button>
 
-                <p className="text-center text-[#4a7fa8] text-sm">
+                <p className="text-center text-[#6B7280] text-sm">
                   Have a file instead?{' '}
-                  <button type="button" onClick={() => setMode('file')} className="text-[#2D6BE4] hover:underline">
+                  <button type="button" onClick={() => setMode('file')} className="text-[#F97316] hover:underline">
                     Switch to file upload
                   </button>
                 </p>
@@ -337,12 +337,12 @@ export default function UploadPage() {
           </div>
         ) : (
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 rounded-full bg-[#2D6BE4]/20 flex items-center justify-center mx-auto mb-6">
-              <div className="w-8 h-8 border-2 border-[#2D6BE4] border-t-transparent rounded-full animate-spin" />
+            <div className="w-16 h-16 rounded-full bg-[#F97316]/20 flex items-center justify-center mx-auto mb-6">
+              <div className="w-8 h-8 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
             </div>
             <h2 className="text-2xl font-bold mb-3">Analyzing your report</h2>
-            <p className="text-[#4a7fa8] text-lg mb-4">{statusMsg}</p>
-            <div className="text-[#4a7fa8] text-sm">
+            <p className="text-[#6B7280] text-lg mb-4">{statusMsg}</p>
+            <div className="text-[#6B7280] text-sm">
               Running Master Orchestrator → Case Router → Specialist Agents → Letter Bot
             </div>
           </div>

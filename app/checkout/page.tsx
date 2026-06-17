@@ -93,66 +93,66 @@ function CheckoutInner() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#0D1B2E] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F5F7] text-[#111827] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4 text-[#27AE60]">✓</div>
-          <h1 className="text-3xl font-bold mb-2 text-[#27AE60]">You're on {plan.name}!</h1>
-          <p className="text-[#4a7fa8]">Redirecting to your dashboard...</p>
+          <div className="text-6xl mb-4 text-[#16A34A]">✓</div>
+          <h1 className="text-3xl font-bold mb-2 text-[#16A34A]">You're on {plan.name}!</h1>
+          <p className="text-[#6B7280]">Redirecting to your dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0D1B2E] text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F5F5F7] text-[#111827] flex items-center justify-center px-4">
       <div className="w-full max-w-lg">
         {/* Header */}
         <Link href="/" className="flex items-center gap-3 mb-8 justify-center">
-          <ExpungeLogo variant="primary" width={200} height={50} light />
+          <ExpungeLogo variant="primary" width={200} height={50} />
         </Link>
 
-        <div className="bg-[#1A2E4A] border border-white/10 rounded-2xl p-8">
+        <div className="bg-[#FFFFFF] border border-[#E5E7EB] rounded-2xl p-8">
           {/* Plan summary */}
-          <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
+          <div className="flex items-center justify-between mb-6 pb-6 border-b border-[#E5E7EB]">
             <div>
               <div className="font-semibold text-lg">{plan.name} Plan</div>
-              <div className="text-[#4a7fa8] text-sm">{plan.description}</div>
+              <div className="text-[#6B7280] text-sm">{plan.description}</div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-[#2D6BE4]">{plan.priceLabel}</div>
-              <div className="text-[#4a7fa8] text-xs">billed monthly</div>
+              <div className="text-2xl font-bold text-[#F97316]">{plan.priceLabel}</div>
+              <div className="text-[#6B7280] text-xs">billed monthly</div>
             </div>
           </div>
 
           {/* Features recap */}
           <ul className="space-y-2 mb-6">
             {plan.features.map((f) => (
-              <li key={f} className="flex items-center gap-2 text-sm text-slate-300">
-                <span className="text-[#27AE60]">✓</span> {f}
+              <li key={f} className="flex items-center gap-2 text-sm text-[#374151]">
+                <span className="text-[#16A34A]">✓</span> {f}
               </li>
             ))}
           </ul>
 
           {error && (
-            <div className="bg-[#E63946]/10 border border-[#E63946]/30 text-[#E63946] rounded-lg px-4 py-3 text-sm mb-4">
+            <div className="bg-[#F97316]/10 border border-[#F97316]/30 text-[#F97316] rounded-lg px-4 py-3 text-sm mb-4">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
             <div className="mb-5">
-              <label className="block text-sm text-slate-300 mb-2">Card details</label>
+              <label className="block text-sm text-[#374151] mb-2">Card details</label>
               <div
                 id="card-container"
-                className="bg-[#0D1B2E] border border-white/10 rounded-xl p-4 min-h-[56px]"
+                className="bg-[#F5F5F7] border border-[#E5E7EB] rounded-xl p-4 min-h-[56px]"
                 style={{ colorScheme: 'dark' }}
               />
               {!sdkReady && (
-                <div className="text-xs text-[#4a7fa8] mt-2 text-center">Loading secure payment form...</div>
+                <div className="text-xs text-[#6B7280] mt-2 text-center">Loading secure payment form...</div>
               )}
             </div>
 
-            <div className="bg-[#0D1B2E] rounded-xl p-4 mb-5 text-xs text-[#4a7fa8] flex items-start gap-2">
+            <div className="bg-[#F5F5F7] rounded-xl p-4 mb-5 text-xs text-[#6B7280] flex items-start gap-2">
               <span className="mt-0.5">🔒</span>
               <span>Payments processed securely by Square. Your card details never touch our servers.</span>
             </div>
@@ -160,7 +160,7 @@ function CheckoutInner() {
             <button
               type="submit"
               disabled={loading || !sdkReady}
-              className="w-full bg-[#E63946] hover:bg-[#c92e3a] disabled:opacity-50 disabled:cursor-not-allowed transition py-4 rounded-xl font-bold text-lg text-white"
+              className="w-full bg-[#F97316] hover:bg-[#EA580C] disabled:opacity-50 disabled:cursor-not-allowed transition py-4 rounded-xl font-bold text-lg text-white"
             >
               {loading ? 'Processing payment...' : `Subscribe — ${plan.priceLabel}`}
             </button>
@@ -173,7 +173,7 @@ function CheckoutInner() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0D1B2E]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#F5F5F7]" />}>
       <CheckoutInner />
     </Suspense>
   )

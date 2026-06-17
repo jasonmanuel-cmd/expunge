@@ -5,11 +5,11 @@ import ExpungeLogo from '@/components/ExpungeLogo'
 
 const STATUS_COLORS: Record<string, string> = {
   analyzing: 'text-yellow-400',
-  routing: 'text-[#2D6BE4]',
-  active: 'text-[#2D6BE4]',
+  routing: 'text-[#F97316]',
+  active: 'text-[#F97316]',
   monitoring: 'text-cyan-400',
-  completed: 'text-[#27AE60]',
-  escalated: 'text-[#E63946]',
+  completed: 'text-[#16A34A]',
+  escalated: 'text-[#F97316]',
 }
 
 export default async function PartnerDashboardPage() {
@@ -43,13 +43,13 @@ export default async function PartnerDashboardPage() {
   ).length ?? 0
 
   return (
-    <div className="min-h-screen bg-[#0D1B2E] text-white">
-      <header className="border-b border-white/10 px-8 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-[#F5F5F7] text-[#111827]">
+      <header className="border-b border-[#E5E7EB] px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <ExpungeLogo variant="primary" width={160} height={40} light />
-          <span className="ml-2 text-xs bg-[#2D6BE4]/20 text-[#2D6BE4] px-2 py-0.5 rounded-full">Partner</span>
+          <ExpungeLogo variant="primary" width={160} height={40} />
+          <span className="ml-2 text-xs bg-[#F97316]/20 text-[#F97316] px-2 py-0.5 rounded-full">Partner</span>
         </div>
-        <span className="text-[#4a7fa8] text-sm">{profile?.full_name || user.email}</span>
+        <span className="text-[#6B7280] text-sm">{profile?.full_name || user.email}</span>
       </header>
 
       <div className="max-w-6xl mx-auto px-8 py-10">
@@ -57,13 +57,13 @@ export default async function PartnerDashboardPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-10">
-          <div className="bg-[#1A2E4A] border border-white/10 rounded-2xl p-6">
+          <div className="bg-[#FFFFFF] border border-[#E5E7EB] rounded-2xl p-6">
             <div className="text-4xl font-bold mb-1">{totalClients}</div>
-            <div className="text-[#4a7fa8] text-sm">Total clients</div>
+            <div className="text-[#6B7280] text-sm">Total clients</div>
           </div>
-          <div className="bg-[#1A2E4A] border border-white/10 rounded-2xl p-6">
-            <div className="text-4xl font-bold text-[#2D6BE4] mb-1">{activeClients}</div>
-            <div className="text-[#4a7fa8] text-sm">Active disputes</div>
+          <div className="bg-[#FFFFFF] border border-[#E5E7EB] rounded-2xl p-6">
+            <div className="text-4xl font-bold text-[#F97316] mb-1">{activeClients}</div>
+            <div className="text-[#6B7280] text-sm">Active disputes</div>
           </div>
         </div>
 
@@ -71,10 +71,10 @@ export default async function PartnerDashboardPage() {
         <h2 className="text-lg font-semibold mb-4">Client roster</h2>
 
         {!clients || clients.length === 0 ? (
-          <div className="bg-[#1A2E4A] border border-white/10 rounded-2xl p-16 text-center">
+          <div className="bg-[#FFFFFF] border border-[#E5E7EB] rounded-2xl p-16 text-center">
             <div className="text-5xl mb-4">👥</div>
             <div className="font-semibold text-lg mb-2">No clients yet</div>
-            <div className="text-[#4a7fa8] text-sm">Clients will appear here once they link to your partner account</div>
+            <div className="text-[#6B7280] text-sm">Clients will appear here once they link to your partner account</div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -87,24 +87,24 @@ export default async function PartnerDashboardPage() {
               const profile = (Array.isArray(client.profiles) ? client.profiles[0] : client.profiles) as { full_name: string; email: string } | null
 
               return (
-                <div key={client.consumer_id} className="bg-[#1A2E4A] border border-white/10 rounded-2xl p-5 flex items-center justify-between">
+                <div key={client.consumer_id} className="bg-[#FFFFFF] border border-[#E5E7EB] rounded-2xl p-5 flex items-center justify-between">
                   <div>
                     <div className="font-medium">{profile?.full_name || 'Unknown'}</div>
-                    <div className="text-[#4a7fa8] text-sm">{profile?.email}</div>
-                    <div className="text-[#4a7fa8] text-xs mt-1">
-                      {totalCount} items disputed · <span className="text-[#27AE60]">{removedCount}</span> removed
+                    <div className="text-[#6B7280] text-sm">{profile?.email}</div>
+                    <div className="text-[#6B7280] text-xs mt-1">
+                      {totalCount} items disputed · <span className="text-[#16A34A]">{removedCount}</span> removed
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     {latestCase && (
-                      <div className={`text-sm font-medium ${STATUS_COLORS[latestCase.status] ?? 'text-[#4a7fa8]'}`}>
+                      <div className={`text-sm font-medium ${STATUS_COLORS[latestCase.status] ?? 'text-[#6B7280]'}`}>
                         {latestCase.status.replace('_', ' ').toUpperCase()}
                       </div>
                     )}
                     {latestCase && (
                       <Link
                         href={`/disputes/${latestCase.id}`}
-                        className="text-sm text-[#2D6BE4] hover:text-[#4a7fa8] transition"
+                        className="text-sm text-[#F97316] hover:text-[#6B7280] transition"
                       >
                         View →
                       </Link>
