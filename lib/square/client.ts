@@ -36,8 +36,8 @@ export const PLANS = {
   },
   basic: {
     name: 'Basic',
-    price: 2900,
-    priceLabel: '$29/mo',
+    price: 4999,
+    priceLabel: '$49.99/mo',
     description: 'For individuals starting their journey',
     features: [
       '5 dispute letters/mo',
@@ -52,8 +52,8 @@ export const PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: 7900,
-    priceLabel: '$79/mo',
+    price: 9999,
+    priceLabel: '$99.99/mo',
     description: 'For serious credit repair',
     features: [
       'Unlimited disputes',
@@ -69,8 +69,8 @@ export const PLANS = {
   },
   partner: {
     name: 'Partner',
-    price: 19900,
-    priceLabel: '$199/mo',
+    price: 29999,
+    priceLabel: '$299.99/mo',
     description: 'For credit repair businesses',
     features: [
       'Everything in Pro',

@@ -216,7 +216,7 @@ export default function HomePage() {
           {/* Disclaimer */}
           <div className="mt-10 text-center">
             <p className="text-sm text-[#9CA3AF] max-w-2xl mx-auto">
-              Expunge is software, not a law firm. We don't provide legal advice; we help you generate documents and instructions so you can handle your own disputes.
+              Expunge is software, not a law firm. We don&apos;t provide legal advice; we help you generate documents and instructions so you can handle your own disputes.
             </p>
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-white/40 text-sm mt-6">
-                These tactics are based on patterns in public FCRA-related information and dispute practices. They're not legal advice; they're practical guidance for handling your own disputes.
+                These tactics are based on patterns in public FCRA-related information and dispute practices. They&apos;re not legal advice; they&apos;re practical guidance for handling your own disputes.
               </p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
@@ -275,7 +275,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-[#111827]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
-                      Account ownership unverified — dispute as "not mine"
+                      Account ownership unverified — dispute as &quot;not mine&quot;
                     </div>
                     <div className="flex items-center gap-2 text-sm text-[#111827]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
@@ -293,7 +293,7 @@ export default function HomePage() {
                 </div>
                 <div className="bg-[#FFF7ED] border border-[#FED7AA] rounded-lg p-3">
                   <div className="text-xs font-semibold text-[#F97316] mb-1">How a credit pro would attack this</div>
-                  <div className="text-xs text-[#9A3412]">"Send a debt validation request first. If they can't validate within 30 days, demand removal under FCRA § 611. If they re-report, escalate to CFPB."</div>
+                  <div className="text-xs text-[#9A3412]">&quot;Send a debt validation request first. If they can&apos;t validate within 30 days, demand removal under FCRA § 611. If they re-report, escalate to CFPB.&quot;</div>
                 </div>
               </div>
             </div>
@@ -346,7 +346,7 @@ export default function HomePage() {
                     </svg>
                   ))}
                 </div>
-                <p className="text-[#374151] leading-relaxed mb-6 flex-1">"{t.quote}"</p>
+                <p className="text-[#374151] leading-relaxed mb-6 flex-1">&quot;{t.quote}&quot;</p>
                 <div className="border-t border-[#E5E7EB] pt-4">
                   <div className="font-semibold text-[#111827]">{t.name}</div>
                   <div className="text-sm text-[#6B7280]">{t.detail}</div>
@@ -397,7 +397,7 @@ export default function HomePage() {
             <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 flex flex-col">
               <div className="mb-6">
                 <div className="text-sm font-medium text-[#6B7280] mb-1">Basic</div>
-                <div className="text-4xl font-extrabold text-[#111827] mb-1">$29 <span className="text-lg font-normal text-[#6B7280]">/mo</span></div>
+                <div className="text-4xl font-extrabold text-[#111827] mb-1">$49.99 <span className="text-lg font-normal text-[#6B7280]">/mo</span></div>
                 <div className="text-[#6B7280] text-sm">Fix a few key items.</div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
@@ -408,7 +408,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block border-2 border-[#E5E7EB] hover:border-[#D1D5DB] text-[#374151] hover:bg-[#F5F5F7]">
+              <Link href="/register?plan=basic" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block border-2 border-[#E5E7EB] hover:border-[#D1D5DB] text-[#374151] hover:bg-[#F5F5F7]">
                 Start free trial
               </Link>
             </div>
@@ -420,7 +420,7 @@ export default function HomePage() {
               </div>
               <div className="mb-6">
                 <div className="text-sm font-medium text-[#6B7280] mb-1">Pro</div>
-                <div className="text-4xl font-extrabold text-[#111827] mb-1">$79 <span className="text-lg font-normal text-[#6B7280]">/mo</span></div>
+                <div className="text-4xl font-extrabold text-[#111827] mb-1">$99.99 <span className="text-lg font-normal text-[#6B7280]">/mo</span></div>
                 <div className="text-[#6B7280] text-sm">Full report breakdown.</div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
@@ -431,7 +431,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block bg-[#F97316] hover:bg-[#EA580C] text-white shadow-lg shadow-orange-200">
+              <Link href="/register?plan=pro" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block bg-[#F97316] hover:bg-[#EA580C] text-white shadow-lg shadow-orange-200">
                 Start free trial
               </Link>
             </div>
@@ -440,8 +440,8 @@ export default function HomePage() {
             <div className="bg-white border border-[#E5E7EB] border-dashed rounded-2xl p-6 flex flex-col">
               <div className="mb-6">
                 <div className="text-sm font-medium text-[#6B7280] mb-1">Partner <span className="text-xs text-[#F97316] font-bold">(AI Concierge – coming soon)</span></div>
-                <div className="text-4xl font-extrabold text-[#111827] mb-1">$199.99 <span className="text-lg font-normal text-[#6B7280]">/mo</span></div>
-                <div className="text-[#6B7280] text-sm">We'll handle the heavy lifting.</div>
+                <div className="text-4xl font-extrabold text-[#111827] mb-1">$299.99 <span className="text-lg font-normal text-[#6B7280]">/mo</span></div>
+                <div className="text-[#6B7280] text-sm">We&apos;ll handle the heavy lifting.</div>
               </div>
               <ul className="space-y-3 mb-6 flex-1">
                 {['Everything in Pro', 'We will handle sending disputes to all three bureaus for you', 'We will track timelines, responses, and outcomes', 'We will prepare escalation letters and guidance', 'Ideal for busy professionals and credit repair businesses', 'Early access, founder pricing, and white-label options'].map((f) => (
@@ -464,10 +464,10 @@ export default function HomePage() {
       <section className="py-20 sm:py-28 bg-[#14213D] text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl sm:text-5xl font-extrabold mb-4">
-            Ready to start erasing what's holding your score back?
+            Ready to start erasing what&apos;s holding your score back?
           </h2>
           <p className="text-white/60 text-lg mb-10 max-w-xl mx-auto">
-            See every negative item on your report, get the letters and instructions to fight them, and know what's actually possible — without guessing or hiring an expensive credit repair company.
+            See every negative item on your report, get the letters and instructions to fight them, and know what&apos;s actually possible — without guessing or hiring an expensive credit repair company.
           </p>
           <Link
             href="/register"
