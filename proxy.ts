@@ -14,7 +14,7 @@ const PROTECTED_PATHS = [
 // Paths that should redirect to dashboard if already logged in
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/reset-password']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: { headers: request.headers },
   })
@@ -59,6 +59,13 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (user && AUTH_PATHS.some((p) => pathname.startsWith(p))) {
+    // Honor upgrade intent: a logged-in user who clicked a paid-plan CTA
+    // (e.g. /register?plan=pro) should go straight to checkout, not be
+    // bounced to the dashboard and lose the plan they selected.
+    const plan = request.nextUrl.searchParams.get('plan')
+    if (plan && ['basic', 'pro', 'partner'].includes(plan)) {
+      return NextResponse.redirect(new URL(`/checkout?plan=${plan}`, request.url))
+    }
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

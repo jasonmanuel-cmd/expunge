@@ -98,11 +98,15 @@ export default async function PricingPage() {
                   </div>
                 ) : (
                   <Link
-                    href={user ? '/dashboard' : '/register'}
+                    href={
+                      key === 'free'
+                        ? (user ? '/dashboard' : '/register')
+                        : (user ? `/checkout?plan=${key}` : `/register?plan=${key}`)
+                    }
                     className={`w-full text-center py-3 rounded-xl text-sm font-bold transition block ${
                       isHighlighted
-                        ? 'bg-[#E63946] hover:bg-[#c92e3a] text-white'
-                        : 'bg-white/10 hover:bg-white/20 text-white'
+                        ? 'bg-[#F97316] hover:bg-[#EA580C] text-white'
+                        : 'border-2 border-[#E5E7EB] hover:border-[#D1D5DB] bg-white text-[#374151] hover:bg-[#F5F5F7]'
                     }`}
                   >
                     {key === 'free' ? plan.cta : `Start free — ${plan.priceLabel}`}
