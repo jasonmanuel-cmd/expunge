@@ -5,12 +5,20 @@ import { createClient } from '@/lib/supabase/server'
 // Handles Supabase email-confirmation and OAuth redirects.
 // Email confirmation links arrive as ?token_hash=...&type=signup
 // OAuth / magic-link PKCE arrives as ?code=...
+// The redirect target is passed via ?next=<path> and reconstructed on the
+// server side to avoid Supabase email-link encoding issues.
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
-  const next = searchParams.get('next') ?? '/dashboard'
+  // Read the post-auth redirect target from the cookie set by the register
+  // page. This avoids Supabase email-link URL re-encoding issues that break
+  // nested ?next= query params.
+  const nextCookie = searchParams.get('next')
+    ?? request.cookies.get('expunge_next')?.value
+    ?? '/dashboard'
+  const next = decodeURIComponent(nextCookie)
 
   const supabase = await createClient()
 

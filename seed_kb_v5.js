@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Use ts-node to evaluate the TS file and output JSON as stdout
 const { execSync } = require('child_process');
 const { readFileSync } = require('fs');

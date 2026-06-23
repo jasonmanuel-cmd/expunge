@@ -27,13 +27,25 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
-    const next = role === 'partner' ? '/partner/dashboard' : '/dashboard'
+    // If the user arrived from a paid plan CTA (/register?plan=pro), continue to
+    // checkout after signup instead of dropping them on the dashboard.
+    const planParam = new URLSearchParams(window.location.search).get('plan')
+    const isPaidPlan = planParam === 'basic' || planParam === 'pro' || planParam === 'partner'
+    const next = isPaidPlan
+      ? `/checkout?plan=${planParam}`
+      : role === 'partner'
+        ? '/partner/dashboard'
+        : '/dashboard'
     const supabase = createClient()
+    // Store the post-auth redirect target in a cookie so the callback route
+    // can retrieve it without relying on query params (Supabase email links
+    // re-encode query values, breaking nested redirect URLs).
+    document.cookie = `expunge_next=${encodeURIComponent(next)}; path=/; max-age=600; SameSite=Lax`
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           full_name: fullName,
           role,

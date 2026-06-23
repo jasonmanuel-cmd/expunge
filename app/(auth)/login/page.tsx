@@ -42,7 +42,7 @@ export default function LoginPage() {
     const { error: resendError } = await supabase.auth.resend({
       type: 'signup',
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback/` },
     })
     if (resendError) {
       setError(resendError.message)
