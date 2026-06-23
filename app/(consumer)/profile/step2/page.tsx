@@ -16,7 +16,6 @@ export default function ProfileStep2Page() {
   const [ssnLast4, setSsnLast4] = useState('')
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [checking, setChecking] = useState(true)
 

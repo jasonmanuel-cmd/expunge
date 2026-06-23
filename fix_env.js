@@ -1,3 +1,4 @@
+/* eslint-disable */
 const fs = require('fs');
 const content = fs.readFileSync('.env.local', 'utf8');
 const updated = content

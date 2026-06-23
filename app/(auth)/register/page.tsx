@@ -27,7 +27,15 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
-    const next = role === 'partner' ? '/partner/dashboard' : '/dashboard'
+    // If the user arrived from a paid plan CTA (/register?plan=pro), continue to
+    // checkout after signup instead of dropping them on the dashboard.
+    const planParam = new URLSearchParams(window.location.search).get('plan')
+    const isPaidPlan = planParam === 'basic' || planParam === 'pro' || planParam === 'partner'
+    const next = isPaidPlan
+      ? `/checkout?plan=${planParam}`
+      : role === 'partner'
+        ? '/partner/dashboard'
+        : '/dashboard'
     const supabase = createClient()
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,

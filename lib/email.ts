@@ -59,8 +59,7 @@ export async function sendNoResponseEmail(
   name: string,
   accountName: string,
   bureau: string,
-  caseId: string,
-  disputeItemId: string
+  caseId: string
 ): Promise<void> {
   if (!isConfigured()) return
   try {

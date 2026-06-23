@@ -116,7 +116,7 @@ export default function UploadPage() {
       const orchResult = await orchRes.json()
       setStatusMsg(`Found ${orchResult.itemCount} disputable items. Generating letters...`)
       setTimeout(() => router.push('/dashboard'), 1500)
-    } catch (err) {
+    } catch {
       setError('Upload failed. Please check your connection and try again.')
       setStep('upload')
       setLoading(false)
@@ -168,7 +168,7 @@ export default function UploadPage() {
       const result = await res.json()
       setStatusMsg(`Found ${result.itemCount} disputable items. Generating letters...`)
       setTimeout(() => router.push('/dashboard'), 1500)
-    } catch (err) {
+    } catch {
       setError('Analysis failed. Please try again.')
       setStep('upload')
       setLoading(false)
