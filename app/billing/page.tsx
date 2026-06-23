@@ -44,8 +44,6 @@ export default async function BillingPage() {
   }
 
   const planKeys = Object.keys(PLANS) as (keyof typeof PLANS)[]
-  const nextPlan = UPGRADE_CTA[plan]
-  const hasUpgradeOption = plan !== 'partner' && plan !== 'free' || plan === 'free' || plan === 'basic' || plan === 'pro'
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] text-[#111827]">
@@ -82,10 +80,10 @@ export default async function BillingPage() {
           {/* Quick actions row */}
           <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-[#E5E7EB]">
             <Link
-              href={nextPlan.href}
+              href={UPGRADE_CTA[plan].href}
               className="flex-1 min-w-[180px] text-center bg-[#F97316] hover:bg-[#EA580C] text-white font-bold py-3 rounded-xl transition text-sm"
             >
-              {nextPlan.label}
+              {UPGRADE_CTA[plan].label}
             </Link>
             <Link
               href="/pricing"
