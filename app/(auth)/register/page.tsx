@@ -37,11 +37,15 @@ export default function RegisterPage() {
         ? '/partner/dashboard'
         : '/dashboard'
     const supabase = createClient()
+    // Store the post-auth redirect target in a cookie so the callback route
+    // can retrieve it without relying on query params (Supabase email links
+    // re-encode query values, breaking nested redirect URLs).
+    document.cookie = `expunge_next=${encodeURIComponent(next)}; path=/; max-age=600; SameSite=Lax`
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           full_name: fullName,
           role,
