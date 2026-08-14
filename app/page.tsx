@@ -9,22 +9,23 @@ const CHECK = (
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#F5F5F7] flex flex-col text-[#111827]">
+    <main className="min-h-screen bg-white flex flex-col" style={{ fontFamily: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
 
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#E5E7EB]">
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md" style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-3">
             <ExpungeLogo variant="primary" width={160} height={40} />
           </Link>
           <div className="hidden sm:flex items-center gap-8">
-            <Link href="#how-it-works" className="text-sm text-[#6B7280] hover:text-[#111827] transition font-medium">How it works</Link>
-            <Link href="#pricing" className="text-sm text-[#6B7280] hover:text-[#111827] transition font-medium">Pricing</Link>
-            <Link href="/login" className="text-sm text-[#6B7280] hover:text-[#111827] transition font-medium">Sign in</Link>
+            <Link href="#how-it-works" className="text-sm transition font-medium" style={{ color: '#615d59' }}>How it works</Link>
+            <Link href="#pricing" className="text-sm transition font-medium" style={{ color: '#615d59' }}>Pricing</Link>
+            <Link href="/login" className="text-sm transition font-medium" style={{ color: '#615d59' }}>Sign in</Link>
           </div>
           <Link
             href="/register"
-            className="text-sm bg-[#F97316] hover:bg-[#EA580C] transition-all duration-300 px-5 py-2.5 rounded-lg font-semibold text-white shadow-md shadow-orange-200"
+            className="text-sm bg-[#F97316] hover:bg-[#EA580C] transition-all duration-300 px-5 py-2.5 rounded-lg font-semibold text-white"
+            style={{ boxShadow: '0 2px 8px rgba(249,115,22,0.25)' }}
           >
             Scan your report free
           </Link>
@@ -32,42 +33,44 @@ export default function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative pt-16 pb-20 sm:pt-24 sm:pb-28">
+      <section className="relative pt-20 pb-24 sm:pt-28 sm:pb-32 overflow-hidden">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left: copy */}
             <div>
-              <div className="animate-fade-in-up inline-flex items-center gap-2 bg-[#FFF7ED] border border-[#FED7AA] rounded-full px-4 py-1.5 text-sm text-[#F97316] font-medium mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: '#f6f5f4', color: '#615d59', border: '1px solid rgba(0,0,0,0.08)' }}>
                 <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
                 Document generation + insider playbook
               </div>
 
-              <h1 className="animate-fade-in-up-delay-1 text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight leading-[1.1] mb-6 text-[#111827]">
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold leading-[1.1] mb-6" style={{ color: 'rgba(0,0,0,0.95)', letterSpacing: '-1.5px' }}>
                 See every negative item. Get the letters and instructions to{' '}
                 <span className="text-[#F97316]">erase them.</span>
               </h1>
 
-              <p className="animate-fade-in-up-delay-2 text-lg sm:text-xl text-[#6B7280] max-w-xl mb-8 leading-relaxed">
+              <p className="text-lg sm:text-xl max-w-xl mb-10 leading-relaxed" style={{ color: '#615d59' }}>
                 Expunge scans your credit report, breaks down every negative item, and generates dispute letters plus step-by-step instructions you can use yourself. A full AI concierge service that handles disputes for you is coming soon.
               </p>
 
-              <div className="animate-fade-in-up-delay-3 flex flex-col sm:flex-row gap-4 mb-10">
+              <div className="flex flex-col sm:flex-row gap-4 mb-12">
                 <Link
                   href="/register"
-                  className="bg-[#F97316] hover:bg-[#EA580C] transition-all duration-300 px-8 py-4 rounded-xl font-bold text-lg text-white shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:-translate-y-0.5 text-center"
+                  className="bg-[#F97316] hover:bg-[#EA580C] transition-all duration-300 px-8 py-4 rounded-xl font-bold text-lg text-white text-center"
+                  style={{ boxShadow: '0 4px 20px rgba(249,115,22,0.3)' }}
                 >
                   Scan your report free — no card required
                 </Link>
                 <Link
                   href="#how-it-works"
-                  className="border-2 border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-white transition-all duration-300 px-8 py-4 rounded-xl font-semibold text-lg text-[#6B7280] hover:text-[#111827] text-center"
+                  className="transition-all duration-300 px-8 py-4 rounded-xl font-semibold text-lg text-center"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.04)', color: '#374151' }}
                 >
                   See how it works
                 </Link>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-8" style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '2rem' }}>
                 {[
                   { value: '50K+', label: 'Disputes prepared' },
                   { value: '$4.2M+', label: 'Debt challenged' },
@@ -75,27 +78,27 @@ export default function HomePage() {
                   { value: '< 5min', label: 'To first letter' },
                 ].map((s) => (
                   <div key={s.label}>
-                    <div className="text-2xl sm:text-3xl font-extrabold text-[#111827]">{s.value}</div>
-                    <div className="text-xs sm:text-sm text-[#6B7280] mt-0.5">{s.label}</div>
+                    <div className="text-2xl sm:text-3xl font-bold" style={{ color: 'rgba(0,0,0,0.95)' }}>{s.value}</div>
+                    <div className="text-xs sm:text-sm mt-1" style={{ color: '#a39e98' }}>{s.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Right: visual mock of credit report */}
-            <div className="animate-fade-in-up-delay-2 hidden lg:block">
-              <div className="bg-white rounded-2xl shadow-xl border border-[#E5E7EB] overflow-hidden">
+            <div className="hidden lg:block">
+              <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02)' }}>
                 {/* Report header */}
-                <div className="bg-[#14213D] px-6 py-4 flex items-center justify-between">
+                <div className="px-6 py-4 flex items-center justify-between" style={{ backgroundColor: '#14213D' }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
                       <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
                     <span className="text-white font-semibold text-sm">Credit Report Analysis</span>
                   </div>
-                  <span className="text-xs text-white/60">Sample view</span>
+                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Sample view</span>
                 </div>
                 {/* Report items */}
                 <div className="p-4 space-y-3">
@@ -105,12 +108,19 @@ export default function HomePage() {
                     { name: 'EQUIFAX INQUIRY', type: 'Inquiry', status: 'negative', statusText: 'Unauthorized hard pull' },
                     { name: 'CHASE FREEDOM', type: 'Credit Card', status: 'positive', statusText: 'Current · On time' },
                   ].map((item) => (
-                    <div key={item.name} className={`flex items-center justify-between p-3 rounded-lg ${item.status === 'negative' ? 'bg-[#FEF2F2] border border-[#FECACA]' : 'bg-[#F0FDF4] border border-[#BBF7D0]'}`}>
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between p-3 rounded-lg"
+                      style={{
+                        backgroundColor: item.status === 'negative' ? '#FEF2F2' : '#F0FDF4',
+                        border: `1px solid ${item.status === 'negative' ? '#FECACA' : '#BBF7D0'}`,
+                      }}
+                    >
                       <div className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full ${item.status === 'negative' ? 'bg-[#DC2626]' : 'bg-[#16A34A]'}`} />
                         <div>
-                          <div className="text-sm font-semibold text-[#111827]">{item.name}</div>
-                          <div className="text-xs text-[#6B7280]">{item.type}</div>
+                          <div className="text-sm font-semibold" style={{ color: 'rgba(0,0,0,0.95)' }}>{item.name}</div>
+                          <div className="text-xs" style={{ color: '#a39e98' }}>{item.type}</div>
                         </div>
                       </div>
                       <div className="text-right">
@@ -123,8 +133,8 @@ export default function HomePage() {
                   ))}
                 </div>
                 {/* Bottom summary */}
-                <div className="bg-[#F9FAFB] border-t border-[#E5E7EB] px-6 py-3 flex items-center justify-between">
-                  <span className="text-xs text-[#6B7280]">3 negative items found</span>
+                <div className="px-6 py-3 flex items-center justify-between" style={{ borderTop: '1px solid rgba(0,0,0,0.08)', backgroundColor: '#f6f5f4' }}>
+                  <span className="text-xs" style={{ color: '#a39e98' }}>3 negative items found</span>
                   <span className="text-xs font-semibold text-[#F97316]">3 dispute letters generated →</span>
                 </div>
               </div>
@@ -132,7 +142,7 @@ export default function HomePage() {
           </div>
 
           {/* Trust strip */}
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm text-[#6B7280]">
+          <div className="mt-16 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm" style={{ color: '#a39e98' }}>
             <span className="flex items-center gap-2">
               <svg className="w-4 h-4 text-[#16A34A]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
               Bank-grade encryption
@@ -150,21 +160,21 @@ export default function HomePage() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="py-20 sm:py-28 bg-white">
+      <section id="how-it-works" className="py-24 sm:py-32" style={{ backgroundColor: '#f6f5f4' }}>
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#FFF7ED] border border-[#FED7AA] rounded-full px-4 py-1.5 text-sm text-[#F97316] font-medium mb-6">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: 'rgba(0,0,0,0.04)', color: '#615d59', border: '1px solid rgba(0,0,0,0.08)' }}>
               How it works
             </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold mb-4 text-[#111827]">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ color: 'rgba(0,0,0,0.95)', letterSpacing: '-1.5px' }}>
               Three steps to a cleaner report
             </h2>
-            <p className="text-[#6B7280] text-lg max-w-xl mx-auto">
+            <p className="text-lg max-w-xl mx-auto" style={{ color: '#615d59' }}>
               From upload to ready-to-send letters and instructions in minutes, not months.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 step: '01',
@@ -199,23 +209,24 @@ export default function HomePage() {
             ].map((item) => (
               <div
                 key={item.step}
-                className="group relative bg-[#F5F5F7] border border-[#E5E7EB] rounded-2xl p-8 hover:border-[#F97316]/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-lg"
+                className="group relative rounded-2xl p-8 transition-all duration-500 hover:-translate-y-1"
+                style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}
               >
-                <div className="absolute top-6 right-6 text-5xl font-extrabold text-[#E5E7EB]">
+                <div className="absolute top-6 right-6 text-5xl font-bold" style={{ color: 'rgba(0,0,0,0.06)' }}>
                   {item.step}
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-[#FFF7ED] flex items-center justify-center text-[#F97316] mb-5">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}>
                   {item.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-[#111827]">{item.title}</h3>
-                <p className="text-[#6B7280] leading-relaxed">{item.desc}</p>
+                <h3 className="text-xl font-bold mb-3" style={{ color: 'rgba(0,0,0,0.95)' }}>{item.title}</h3>
+                <p className="leading-relaxed" style={{ color: '#615d59' }}>{item.desc}</p>
               </div>
             ))}
           </div>
 
           {/* Disclaimer */}
-          <div className="mt-10 text-center">
-            <p className="text-sm text-[#9CA3AF] max-w-2xl mx-auto">
+          <div className="mt-12 text-center">
+            <p className="text-sm max-w-2xl mx-auto" style={{ color: '#a39e98' }}>
               Expunge is software, not a law firm. We don&apos;t provide legal advice; we help you generate documents and instructions so you can handle your own disputes.
             </p>
           </div>
@@ -223,20 +234,20 @@ export default function HomePage() {
       </section>
 
       {/* Insider Strategies */}
-      <section className="py-20 sm:py-28 bg-[#14213D] text-white">
+      <section className="py-24 sm:py-32" style={{ backgroundColor: '#14213D' }}>
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm text-[#F97316] font-medium mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#F97316', border: '1px solid rgba(255,255,255,0.15)' }}>
                 Insider playbook
               </div>
-              <h2 className="text-3xl sm:text-5xl font-extrabold mb-4">
+              <h2 className="text-3xl sm:text-5xl font-bold mb-4 text-white" style={{ letterSpacing: '-1.5px' }}>
                 Credit pro tactics built into every letter
               </h2>
-              <p className="text-white/60 text-lg mb-8 leading-relaxed">
+              <p className="text-lg mb-8 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 Credit pros know timing, phrasing, and escalation matter. Expunge bakes those patterns into your letters and instructions — without you having to study credit law.
               </p>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {[
                   { title: 'Timing tactics', desc: 'Suggested sending and follow-up windows so bureaus can\'t stall your response timeline.' },
                   { title: 'Evidence stacking', desc: 'Guidance on what to attach (ID, proof of address, statements) so your dispute isn\'t rejected as "incomplete" on a technicality.' },
@@ -244,56 +255,56 @@ export default function HomePage() {
                   { title: 'Escalation playbook', desc: 'Templates and instructions for escalating when bureaus ignore you or respond with form letters.' },
                 ].map((item) => (
                   <div key={item.title} className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-[#F97316] mt-2 flex-shrink-0" />
+                    <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#F97316' }} />
                     <div>
                       <div className="font-semibold text-white">{item.title}</div>
-                      <div className="text-white/50 text-sm">{item.desc}</div>
+                      <div className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{item.desc}</div>
                     </div>
                   </div>
                 ))}
               </div>
-              <p className="text-white/40 text-sm mt-6">
+              <p className="text-sm mt-8" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 These tactics are based on patterns in public FCRA-related information and dispute practices. They&apos;re not legal advice; they&apos;re practical guidance for handling your own disputes.
               </p>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <div className="text-sm font-semibold text-white/80 mb-4">Sample item breakdown</div>
-              <div className="bg-white rounded-xl p-5 space-y-4">
+            <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="text-sm font-semibold mb-4" style={{ color: 'rgba(255,255,255,0.7)' }}>Sample item breakdown</div>
+              <div className="bg-white rounded-xl p-5 space-y-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-bold text-[#111827]">ABC COLLECTIONS</div>
-                    <div className="text-sm text-[#6B7280]">Collection account · $2,340 · Opened 03/2022</div>
+                    <div className="font-bold" style={{ color: 'rgba(0,0,0,0.95)' }}>ABC COLLECTIONS</div>
+                    <div className="text-sm" style={{ color: '#615d59' }}>Collection account · $2,340 · Opened 03/2022</div>
                   </div>
-                  <span className="text-xs font-bold bg-[#FEF2F2] text-[#DC2626] px-3 py-1 rounded-full">Negative</span>
+                  <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: '#FEF2F2', color: '#DC2626' }}>Negative</span>
                 </div>
-                <div className="border-t border-[#E5E7EB] pt-4">
-                  <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Potential issues found</div>
+                <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }} className="pt-4">
+                  <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#a39e98' }}>Potential issues found</div>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-[#111827]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+                    <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(0,0,0,0.95)' }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#F97316' }} />
                       Balance may be inaccurate — request validation
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-[#111827]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+                    <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(0,0,0,0.95)' }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#F97316' }} />
                       Account ownership unverified — dispute as &quot;not mine&quot;
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-[#111827]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+                    <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(0,0,0,0.95)' }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#F97316' }} />
                       Past statute of limitations — request removal
                     </div>
                   </div>
                 </div>
-                <div className="border-t border-[#E5E7EB] pt-4">
-                  <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Recommended options</div>
+                <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }} className="pt-4">
+                  <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#a39e98' }}>Recommended options</div>
                   <div className="flex flex-wrap gap-2">
                     {['Dispute as inaccurate', 'Request validation', 'Negotiate pay-for-delete', 'Leave for now'].map((opt) => (
-                      <span key={opt} className="text-xs bg-[#F5F5F7] text-[#6B7280] px-3 py-1.5 rounded-lg border border-[#E5E7EB]">{opt}</span>
+                      <span key={opt} className="text-xs px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#f6f5f4', color: '#615d59', border: '1px solid rgba(0,0,0,0.08)' }}>{opt}</span>
                     ))}
                   </div>
                 </div>
-                <div className="bg-[#FFF7ED] border border-[#FED7AA] rounded-lg p-3">
+                <div className="rounded-lg p-3" style={{ backgroundColor: '#FFF7ED', border: '1px solid #FED7AA' }}>
                   <div className="text-xs font-semibold text-[#F97316] mb-1">How a credit pro would attack this</div>
-                  <div className="text-xs text-[#9A3412]">&quot;Send a debt validation request first. If they can&apos;t validate within 30 days, demand removal under FCRA § 611. If they re-report, escalate to CFPB.&quot;</div>
+                  <div className="text-xs" style={{ color: '#9A3412' }}>&quot;Send a debt validation request first. If they can&apos;t validate within 30 days, demand removal under FCRA § 611. If they re-report, escalate to CFPB.&quot;</div>
                 </div>
               </div>
             </div>
@@ -302,13 +313,13 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 sm:py-28 bg-white">
+      <section className="py-24 sm:py-32 bg-white">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#F0FDF4] border border-[#BBF7D0] rounded-full px-4 py-1.5 text-sm text-[#16A34A] font-medium mb-6">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: '#F0FDF4', color: '#16A34A', border: '1px solid rgba(0,0,0,0.08)' }}>
               Real results
             </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-[#111827] mb-4">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ color: 'rgba(0,0,0,0.95)', letterSpacing: '-1.5px' }}>
               Real people. Real results.
             </h2>
           </div>
@@ -336,9 +347,10 @@ export default function HomePage() {
             ].map((t) => (
               <div
                 key={t.name}
-                className="bg-[#F5F5F7] border border-[#E5E7EB] rounded-2xl p-8 flex flex-col"
+                className="rounded-2xl p-8 flex flex-col"
+                style={{ backgroundColor: '#f6f5f4', border: '1px solid rgba(0,0,0,0.06)' }}
               >
-                <span className="text-xs font-bold text-[#F97316] uppercase tracking-wider mb-3">{t.label}</span>
+                <span className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#F97316' }}>{t.label}</span>
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
                     <svg key={i} className="w-4 h-4 text-[#F59E0B]" fill="currentColor" viewBox="0 0 20 20">
@@ -346,10 +358,10 @@ export default function HomePage() {
                     </svg>
                   ))}
                 </div>
-                <p className="text-[#374151] leading-relaxed mb-6 flex-1">&quot;{t.quote}&quot;</p>
-                <div className="border-t border-[#E5E7EB] pt-4">
-                  <div className="font-semibold text-[#111827]">{t.name}</div>
-                  <div className="text-sm text-[#6B7280]">{t.detail}</div>
+                <p className="leading-relaxed mb-6 flex-1" style={{ color: '#374151' }}>&quot;{t.quote}&quot;</p>
+                <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '1rem' }}>
+                  <div className="font-semibold" style={{ color: 'rgba(0,0,0,0.95)' }}>{t.name}</div>
+                  <div className="text-sm" style={{ color: '#615d59' }}>{t.detail}</div>
                 </div>
               </div>
             ))}
@@ -358,101 +370,101 @@ export default function HomePage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-20 sm:py-28 bg-[#F5F5F7]">
+      <section id="pricing" className="py-24 sm:py-32" style={{ backgroundColor: '#f6f5f4' }}>
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#FFF7ED] border border-[#FED7AA] rounded-full px-4 py-1.5 text-sm text-[#F97316] font-medium mb-6">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: 'rgba(0,0,0,0.04)', color: '#615d59', border: '1px solid rgba(0,0,0,0.08)' }}>
               Pricing
             </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-[#111827] mb-4">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ color: 'rgba(0,0,0,0.95)', letterSpacing: '-1.5px' }}>
               Simple, transparent pricing
             </h2>
-            <p className="text-[#6B7280] text-lg max-w-xl mx-auto">
+            <p className="text-lg max-w-xl mx-auto" style={{ color: '#615d59' }}>
               Start free. Upgrade when you want the full playbook.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Free */}
-            <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 flex flex-col">
+            <div className="rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}>
               <div className="mb-6">
-                <div className="text-sm font-medium text-[#6B7280] mb-1">Free</div>
-                <div className="text-4xl font-extrabold text-[#111827] mb-1">$0 <span className="text-lg font-normal text-[#6B7280]">forever</span></div>
-                <div className="text-[#6B7280] text-sm">Try Expunge with one dispute.</div>
+                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Free</div>
+                <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$0 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>forever</span></div>
+                <div className="text-sm" style={{ color: '#615d59' }}>Try Expunge with one dispute.</div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
                 {['1 dispute letter', 'Single bureau', 'Basic AI analysis', 'Email support'].map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-[#374151]">
+                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
                     {CHECK}
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block border-2 border-[#E5E7EB] hover:border-[#D1D5DB] text-[#374151] hover:bg-[#F5F5F7]">
+              <Link href="/register" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block" style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#374151' }}>
                 Start free
               </Link>
             </div>
 
             {/* Basic */}
-            <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 flex flex-col">
+            <div className="rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}>
               <div className="mb-6">
-                <div className="text-sm font-medium text-[#6B7280] mb-1">Basic</div>
-                <div className="text-4xl font-extrabold text-[#111827] mb-1">$49.99 <span className="text-lg font-normal text-[#6B7280]">/mo</span></div>
-                <div className="text-[#6B7280] text-sm">Fix a few key items.</div>
+                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Basic</div>
+                <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$49.99 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>/mo</span></div>
+                <div className="text-sm" style={{ color: '#615d59' }}>Fix a few key items.</div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
                 {['Up to 5 negative items per month', 'For each item: explanation, impact, and how a credit pro would attack it', 'AI-generated dispute letters for all 3 bureaus', 'Step-by-step sending and follow-up instructions', '30-day tracking guidance', 'Priority support'].map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-[#374151]">
+                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
                     {CHECK}
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/register?plan=basic" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block border-2 border-[#E5E7EB] hover:border-[#D1D5DB] text-[#374151] hover:bg-[#F5F5F7]">
+              <Link href="/register?plan=basic" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block" style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#374151' }}>
                 Start free trial
               </Link>
             </div>
 
             {/* Pro */}
-            <div className="relative bg-white border-2 border-[#F97316] rounded-2xl p-6 flex flex-col shadow-xl shadow-orange-100">
+            <div className="relative rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '2px solid #F97316', boxShadow: '0 8px 32px rgba(249,115,22,0.12)' }}>
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#F97316] text-white text-xs font-bold px-4 py-1 rounded-full">
                 MOST POPULAR
               </div>
               <div className="mb-6">
-                <div className="text-sm font-medium text-[#6B7280] mb-1">Pro</div>
-                <div className="text-4xl font-extrabold text-[#111827] mb-1">$99.99 <span className="text-lg font-normal text-[#6B7280]">/mo</span></div>
-                <div className="text-[#6B7280] text-sm">Full report breakdown.</div>
+                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Pro</div>
+                <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$99.99 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>/mo</span></div>
+                <div className="text-sm" style={{ color: '#615d59' }}>Full report breakdown.</div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
                 {['Every negative item on your report, no limits', 'Full breakdown: type, age, impact, dispute potential, recommended options', 'AI-generated dispute letters for all 3 bureaus for every item', 'Complete instruction set: how to send, what to attach, when to follow up', 'Bulk upload and organized dashboard', 'Dedicated support for complex reports'].map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-[#374151]">
+                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
                     {CHECK}
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/register?plan=pro" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block bg-[#F97316] hover:bg-[#EA580C] text-white shadow-lg shadow-orange-200">
+              <Link href="/register?plan=pro" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block bg-[#F97316] hover:bg-[#EA580C] text-white" style={{ boxShadow: '0 4px 16px rgba(249,115,22,0.3)' }}>
                 Start free trial
               </Link>
             </div>
 
-            {/* Partner / AI Concierge */}
-            <div className="bg-white border border-[#E5E7EB] border-dashed rounded-2xl p-6 flex flex-col">
+            {/* Partner */}
+            <div className="rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '1px dashed rgba(0,0,0,0.15)' }}>
               <div className="mb-6">
-                <div className="text-sm font-medium text-[#6B7280] mb-1">Partner <span className="text-xs text-[#F97316] font-bold">(AI Concierge – coming soon)</span></div>
-                <div className="text-4xl font-extrabold text-[#111827] mb-1">$299.99 <span className="text-lg font-normal text-[#6B7280]">/mo</span></div>
-                <div className="text-[#6B7280] text-sm">We&apos;ll handle the heavy lifting.</div>
+                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Partner <span className="text-xs text-[#F97316] font-bold">(AI Concierge – coming soon)</span></div>
+                <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$299.99 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>/mo</span></div>
+                <div className="text-sm" style={{ color: '#615d59' }}>We&apos;ll handle the heavy lifting.</div>
               </div>
               <ul className="space-y-3 mb-6 flex-1">
                 {['Everything in Pro', 'We will handle sending disputes to all three bureaus for you', 'We will track timelines, responses, and outcomes', 'We will prepare escalation letters and guidance', 'Ideal for busy professionals and credit repair businesses', 'Early access, founder pricing, and white-label options'].map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-[#374151]">
+                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
                     {CHECK}
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-[#9CA3AF] mb-4">AI Concierge is expected to launch in about 6 months. Until then, Expunge provides document generation and instructions only — you send disputes yourself.</p>
-              <Link href="/register" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block border-2 border-[#E5E7EB] hover:border-[#D1D5DB] text-[#374151] hover:bg-[#F5F5F7]">
+              <p className="text-xs mb-4" style={{ color: '#a39e98' }}>AI Concierge is expected to launch in about 6 months. Until then, Expunge provides document generation and instructions only — you send disputes yourself.</p>
+              <Link href="/register" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block" style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#374151' }}>
                 Join waitlist
               </Link>
             </div>
@@ -461,33 +473,34 @@ export default function HomePage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="py-20 sm:py-28 bg-[#14213D] text-white">
+      <section className="py-24 sm:py-32" style={{ backgroundColor: '#14213D' }}>
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl sm:text-5xl font-extrabold mb-4">
+          <h2 className="text-3xl sm:text-5xl font-bold mb-4 text-white" style={{ letterSpacing: '-1.5px' }}>
             Ready to start erasing what&apos;s holding your score back?
           </h2>
-          <p className="text-white/60 text-lg mb-10 max-w-xl mx-auto">
+          <p className="text-lg mb-10 max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.6)' }}>
             See every negative item on your report, get the letters and instructions to fight them, and know what&apos;s actually possible — without guessing or hiring an expensive credit repair company.
           </p>
           <Link
             href="/register"
-            className="inline-block bg-[#F97316] hover:bg-[#EA580C] transition-all duration-300 px-10 py-4 rounded-xl font-bold text-lg text-white shadow-xl shadow-orange-900/30 hover:-translate-y-0.5"
+            className="inline-block bg-[#F97316] hover:bg-[#EA580C] transition-all duration-300 px-10 py-4 rounded-xl font-bold text-lg text-white"
+            style={{ boxShadow: '0 8px 32px rgba(249,115,22,0.3)' }}
           >
             Get started free
           </Link>
-          <p className="text-white/40 text-sm mt-4">No credit card required · Cancel anytime · You stay in control of every dispute</p>
+          <p className="text-sm mt-4" style={{ color: 'rgba(255,255,255,0.35)' }}>No credit card required · Cancel anytime · You stay in control of every dispute</p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#E5E7EB] py-10 px-6 bg-white">
+      <footer className="py-10 px-6 bg-white" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <ExpungeLogo variant="primary" width={130} height={32} />
           </div>
-          <div className="flex items-center gap-6 text-sm text-[#9CA3AF]">
-            <Link href="/terms" className="hover:text-[#6B7280] transition">Terms</Link>
-            <Link href="/privacy" className="hover:text-[#6B7280] transition">Privacy</Link>
+          <div className="flex items-center gap-6 text-sm" style={{ color: '#a39e98' }}>
+            <Link href="/terms" className="hover:text-[#615d59] transition">Terms</Link>
+            <Link href="/privacy" className="hover:text-[#615d59] transition">Privacy</Link>
             <span>Expunge is not a law firm and does not provide legal advice.</span>
           </div>
         </div>

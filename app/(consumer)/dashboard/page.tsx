@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
+import { PLANS } from '@/lib/square/client'
 
 const STATUS_COLORS: Record<string, string> = {
   analyzing: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
@@ -45,6 +46,16 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('plan, status')
+    .eq('user_id', user.id)
+    .single()
+
+  const currentPlan = (sub?.plan ?? 'free') as keyof typeof PLANS
+  const isFreeTier = currentPlan === 'free'
+  const isBasicTier = currentPlan === 'basic'
+
   const totalItems = cases?.flatMap((c) => c.dispute_items).length ?? 0
   const removedItems = cases?.flatMap((c) => c.dispute_items).filter((i) => i.status === 'removed').length ?? 0
   const activeItems = cases?.flatMap((c) => c.dispute_items).filter((i) => ['filed', 'under_review', 'dispatched'].includes(i.status)).length ?? 0
@@ -79,6 +90,31 @@ export default async function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* Upgrade banner */}
+        {isFreeTier && (
+          <div className="mb-10 bg-gradient-to-r from-[#F97316] to-[#EA580C] rounded-2xl p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-orange-200">
+            <div>
+              <div className="font-bold text-lg">Unlock the full power of Expunge</div>
+              <div className="text-white/80 text-sm mt-0.5">Upgrade to Pro for unlimited disputes, tri-bureau dispatch, escalation bot, and priority support.</div>
+            </div>
+            <Link href="/checkout?plan=pro" className="bg-white text-[#F97316] hover:bg-orange-50 transition font-bold px-6 py-3 rounded-xl text-sm whitespace-nowrap shadow-md">
+              Upgrade to Pro →
+            </Link>
+          </div>
+        )}
+
+        {isBasicTier && (
+          <div className="mb-10 bg-[#FFF7ED] border border-[#FED7AA] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div className="font-semibold text-[#111827]">Ready for the full playbook?</div>
+              <div className="text-[#6B7280] text-sm mt-0.5">Upgrade to Pro for unlimited disputes, escalation bot, bulk upload, and dedicated support.</div>
+            </div>
+            <Link href="/checkout?plan=pro" className="bg-[#F97316] hover:bg-[#EA580C] transition font-bold px-6 py-3 rounded-xl text-sm whitespace-nowrap text-white shadow-md">
+              Upgrade to Pro → $99/mo
+            </Link>
+          </div>
+        )}
 
         {/* Cases */}
         <h2 className="text-xl font-semibold mb-4">Your cases</h2>

@@ -32,8 +32,8 @@ describe('email service contract', () => {
   })
 
   it('sendNoResponseEmail accepts expected signature', () => {
-    const params = ['to@example.com', 'John', 'Account', 'equifax', 'case-123', 'item-456'] as const
+    const params = ['to@example.com', 'John', 'Account', 'equifax', 'case-123'] as const
     const paramTypes = params.map((p) => typeof p)
-    expect(paramTypes).toEqual(['string', 'string', 'string', 'string', 'string', 'string'])
+    expect(paramTypes).toEqual(['string', 'string', 'string', 'string', 'string'])
   })
 })

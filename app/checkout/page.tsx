@@ -96,7 +96,7 @@ function CheckoutInner() {
       <div className="min-h-screen bg-[#F5F5F7] text-[#111827] flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4 text-[#16A34A]">✓</div>
-          <h1 className="text-3xl font-bold mb-2 text-[#16A34A]">You're on {plan.name}!</h1>
+          <h1 className="text-3xl font-bold mb-2 text-[#16A34A]">You&apos;re on {plan.name}!</h1>
           <p className="text-[#6B7280]">Redirecting to your dashboard...</p>
         </div>
       </div>

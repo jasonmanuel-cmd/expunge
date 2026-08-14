@@ -1,27 +1,40 @@
 # Expunge — Launch Checklist
 
-## Status: Code 100% DONE ✅ | Infrastructure PENDING 🚧
+## Status: Code 100% DONE ✅ | Supabase DONE ✅ | Square + Resend confirmed ✅
 
 Production URL: https://expunge-tau.vercel.app
-Supabase Project: tohxaqcnowjtotmpdqky
+Supabase Project: axzepqtovatvxhnaupgf (the project `.env.local` actually points at)
 Vercel Project: expunge
 
----
-
-## BLOCKER #1: Supabase Project is PAUSED (YOU MUST DO)
-
-1. Go to: https://supabase.com/dashboard/project/tohxaqcnowjtotmpdqky
-2. Click "Unpause" (top banner)
-3. Once unpaused, run migration #005:
-   ```
-   cd C:\Users\blunt\Desktop\apps\1_NEARLY_DONE_80+\expunge
-   supabase migration up
-   ```
-   This adds address_line1, address_line2, city, state, zip_code, ssn_last4, date_of_birth columns to profiles table.
+> NOTE: An earlier version of this checklist referenced Supabase project
+> `tohxaqcnowjtotmpdqky`. That ref is dead — the live project is
+> `axzepqtovatvxhnaupgf`, confirmed against `.env.local`
+> (`NEXT_PUBLIC_SUPABASE_URL`).
 
 ---
 
-## BLOCKER #2: Square Production Subscription Plans (YOU MUST DO)
+## BLOCKER #1: Supabase — ✅ DONE
+
+Verified on project `axzepqtovatvxhnaupgf`:
+- Project is `ACTIVE_HEALTHY` (not paused).
+- Migration #005 already applied — `profiles` has `address_line1`, `address_line2`,
+  `city`, `state`, `zip_code`, `ssn_last4`, `date_of_birth`.
+- All 12 tables present, RLS enabled on every one.
+- Security hardening applied (migration `006_security_hardening`): removed two
+  permissive `USING(true)` public policies, revoked public RPC execute on the
+  `handle_new_user` / `handle_new_subscription` trigger functions, and pinned
+  `search_path` on all four functions. Advisor: 0 actionable warnings.
+
+Remaining (optional, dashboard only): enable **Leaked Password Protection**
+under Authentication → Password.
+
+---
+
+## BLOCKER #2: Square Production — ✅ CONFIRMED (operator)
+
+Operator confirms the 3 production subscription plans, production credentials,
+and the webhook are configured in Vercel production env. Reference steps below
+retained for reference / re-setup.
 
 1. Log in to https://squareup.com/dashboard
 2. Go to Subscriptions → Plans → Create Plan
@@ -60,7 +73,10 @@ Vercel Project: expunge
 
 ---
 
-## BLOCKER #3: Resend Email (YOU MUST DO)
+## BLOCKER #3: Resend Email — ✅ CONFIRMED (operator)
+
+Operator confirms `RESEND_API_KEY` is set in Vercel production env. Reference
+steps below retained for reference / re-setup.
 
 1. Create account at https://resend.com
 2. Verify your domain (expunge.ai or your chosen domain)
@@ -74,17 +90,19 @@ Vercel Project: expunge
 
 ---
 
-## BLOCKER #4: Seed Knowledge Base (AFTER SUPABASE UNPAUSED)
+## BLOCKER #4: Seed Knowledge Base — ✅ DONE
 
-Run this after Supabase is unpaused:
+Verified: `dispute_knowledge_base` contains 23 entries across 8 FCRA categories
+(fcra_law, case_law, cfpb_enforcement, collection_violations, dispute_strategy,
+bureau_behavior, metro2_errors, statute_of_limitations).
+
+To re-seed if ever needed:
 
 ```powershell
 Invoke-RestMethod -Uri "https://expunge-tau.vercel.app/api/admin/seed-knowledge" `
   -Method POST `
   -Headers @{ "x-admin-secret" = "86b4c0dd3c7573f59fe65424addee121" }
 ```
-
-This seeds 585 lines of FCRA legal knowledge into the dispute_knowledge_base table.
 
 ---
 

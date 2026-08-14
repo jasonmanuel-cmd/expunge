@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
             content, dispute_item_id,
             dispute_items!inner(
               type, legal_basis, round, account_name, amount, specialist_output,
-              cases!inner(user_id, profiles(full_name, email))
+              cases!inner(id, user_id, profiles(full_name, email))
             )
           )
         `)
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
       for (const record of expiredRecords ?? []) {
         const letter = Array.isArray(record.letters) ? record.letters[0] : record.letters
         if (!letter) continue
-        const item = letter.dispute_items
+        const item = Array.isArray(letter.dispute_items) ? letter.dispute_items[0] : letter.dispute_items
         if (!item) continue
 
         const sentAt = new Date(record.sent_at)
@@ -199,17 +199,17 @@ export async function GET(request: NextRequest) {
         }).catch((err) => console.error('Learning agent (no_response) error:', err))
 
         // Send email notification if we have user info
-        const profile = item.cases?.profiles
+        const caseRow = Array.isArray(item.cases) ? item.cases[0] : item.cases
+        const profile = Array.isArray(caseRow?.profiles) ? caseRow.profiles[0] : caseRow?.profiles
         if (profile?.email) {
-          const caseId = item.cases?.id ?? ''
+          const caseId = caseRow?.id ?? ''
           const { sendNoResponseEmail } = await import('@/lib/email')
           sendNoResponseEmail(
             profile.email,
             profile.full_name ?? 'User',
             item.account_name,
             record.bureau,
-            caseId,
-            letter.dispute_item_id
+            caseId
           ).catch(() => {})
         }
       }

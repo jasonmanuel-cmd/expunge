@@ -71,7 +71,7 @@ describe('learning-agent processOutcome contract', () => {
       verified: 0.1,
       no_response: 0.0,
     }
-    for (const [outcome, rate] of Object.entries(successRateMap)) {
+    for (const rate of Object.values(successRateMap)) {
       expect(rate).toBeGreaterThanOrEqual(0)
       expect(rate).toBeLessThanOrEqual(1)
     }

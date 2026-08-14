@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { squareClient } from '@/lib/square/client'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

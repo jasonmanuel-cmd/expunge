@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       .select()
       .single()
 
-    const { data: cfpbLetter } = await supabase
+    await supabase
       .from('letters')
       .insert({ dispute_item_id: disputeItemId, bureau: item.bureau, content: cfpbComplaint, round: newRound, is_cfpb_complaint: true })
       .select()

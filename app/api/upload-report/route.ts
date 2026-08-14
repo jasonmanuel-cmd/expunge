@@ -139,7 +139,9 @@ async function extractPdfText(file: File): Promise<string> {
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i)
         const content = await page.getTextContent()
-        const pageText = content.items.map((item: any) => item.str).join(' ')
+        const pageText = content.items
+          .map((item) => ('str' in item ? item.str : ''))
+          .join(' ')
         textParts.push(pageText)
       }
       const fullText = textParts.join('\n\n')
@@ -173,7 +175,3 @@ async function extractImageText(file: File): Promise<string> {
   return `[Image file "${file.name}" uploaded. For best results, please use a PDF version of your credit report, or paste the text directly. Image OCR processing is coming soon.]`
 }
 
-function setStatusMsg(msg: string) {
-  // This is a server-side function, so we just log it
-  console.log('[Upload]', msg)
-}

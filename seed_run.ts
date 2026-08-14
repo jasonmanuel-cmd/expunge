@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Seed knowledge base - run with: npx tsx seed_run.ts
 import { createClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
