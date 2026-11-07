@@ -20,6 +20,7 @@ export default function HomePage() {
           <div className="hidden sm:flex items-center gap-8">
             <Link href="#how-it-works" className="text-sm transition font-medium" style={{ color: '#615d59' }}>How it works</Link>
             <Link href="#pricing" className="text-sm transition font-medium" style={{ color: '#615d59' }}>Pricing</Link>
+            <Link href="/for-tax-pros" className="text-sm transition font-medium" style={{ color: '#615d59' }}>For tax firms</Link>
             <Link href="/login" className="text-sm transition font-medium" style={{ color: '#615d59' }}>Sign in</Link>
           </div>
           <Link
