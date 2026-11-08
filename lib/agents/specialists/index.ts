@@ -1,4 +1,4 @@
-import { runAgent } from '@/lib/claude'
+import { runAgent } from '@/lib/ai'
 import type { DisputeType, OrchestratorItem, SpecialistOutput } from '@/lib/types'
 
 function buildSpecialistPrompt(type: DisputeType): string {
@@ -34,7 +34,7 @@ export async function runSpecialistAgent(
   const systemPrompt = buildSpecialistPrompt(item.type)
   const userMessage = `Analyze this dispute item for ${consumerName}:\n${JSON.stringify(item, null, 2)}`
 
-  const response = await runAgent(systemPrompt, userMessage, true)
+  const response = await runAgent(systemPrompt, userMessage)
 
   try {
     const jsonMatch = response.match(/\{[\s\S]*\}/)

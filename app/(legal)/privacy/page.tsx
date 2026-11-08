@@ -29,7 +29,7 @@ export default function PrivacyPage() {
           },
           {
             title: 'Data Sharing',
-            body: 'We do not sell your personal data. We share data only with: (a) Supabase (database hosting); (b) Anthropic (AI processing — data subject to their privacy policy); (c) Square (payment processing); (d) Law enforcement when legally required. All processors are bound by data processing agreements.',
+            body: 'We do not sell your personal data. We share data only with: (a) Supabase (database hosting); (b) OpenAI (AI processing — data subject to their privacy policy); (c) Square (payment processing); (d) Law enforcement when legally required. All processors are bound by data processing agreements.',
           },
           {
             title: 'Data Security',

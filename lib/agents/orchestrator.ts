@@ -1,4 +1,4 @@
-import { anthropic, MODEL } from '@/lib/claude'
+import { complete } from '@/lib/ai'
 import { retrieveKnowledge } from '@/lib/agents/knowledge-retriever'
 import type { OrchestratorOutput, DisputeType, Bureau } from '@/lib/types'
 
@@ -53,7 +53,7 @@ export async function runOrchestrator(creditReportText: string): Promise<Orchest
     likelyBureaus
   )
 
-  // Build enriched system prompt with KB + memory (all prompt-cached)
+  // Build enriched system prompt with KB + memory (OpenAI caches repeated prefixes automatically)
   const enrichedSystemPrompt = [
     BASE_SYSTEM_PROMPT,
     knowledgeBase ? `\n\n${knowledgeBase}` : '',
@@ -61,33 +61,18 @@ export async function runOrchestrator(creditReportText: string): Promise<Orchest
     hasMemory ? '\n\nApply the learned memory patterns above to adjust your confidence and strategy for each item.' : '',
   ].join('')
 
-  const response = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 8192,
-    system: [
-      {
-        type: 'text',
-        text: enrichedSystemPrompt,
-        cache_control: { type: 'ephemeral' },
-      },
-    ],
-    messages: [
-      {
-        role: 'user',
-        content: `Please analyze this credit report and identify all disputable items:\n\n${creditReportText}`,
-      },
-    ],
-  })
-
-  const block = response.content[0]
-  if (block.type !== 'text') throw new Error('Unexpected response type from orchestrator')
+  const text = await complete(
+    enrichedSystemPrompt,
+    `Please analyze this credit report and identify all disputable items:\n\n${creditReportText}`,
+    32768
+  )
 
   try {
-    const jsonMatch = block.text.match(/\{[\s\S]*\}/)
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) throw new Error('No JSON in orchestrator response')
     return JSON.parse(jsonMatch[0]) as OrchestratorOutput
   } catch {
-    throw new Error(`Failed to parse orchestrator output: ${block.text.slice(0, 200)}`)
+    throw new Error(`Failed to parse orchestrator output: ${text.slice(0, 200)}`)
   }
 }
 

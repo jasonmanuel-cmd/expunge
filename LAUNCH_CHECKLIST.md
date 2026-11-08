@@ -141,7 +141,7 @@ Once all blockers are resolved, test this flow:
 | NEXT_PUBLIC_SUPABASE_URL | https://tohxaqcnowjtotmpdqky.supabase.co | same |
 | NEXT_PUBLIC_SUPABASE_ANON_KEY | eyJhbG...e-Tc | same |
 | SUPABASE_SERVICE_ROLE_KEY | eyJhbG...3gVY | same |
-| ANTHROPIC_API_KEY | *** | set in Vercel |
+| OPENAI_API_KEY | *** | set in Vercel |
 | NEXT_PUBLIC_SQUARE_APP_ID | sandbox-sq0idb-... | PRODUCTION value |
 | SQUARE_ACCESS_TOKEN | EAAAl0... | PRODUCTION value |
 | SQUARE_LOCATION_ID | LX0ECCYXXZYWS | PRODUCTION value |
