@@ -2,9 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
+import MarkMailedButton from './MarkMailedButton'
 
 const TIMELINE_STEPS = ['pending', 'letter_drafted', 'dispatched', 'filed', 'under_review', 'received']
 const OUTCOME_STEPS = ['removed', 'modified', 'verified', 'no_response']
+const STEP_LABELS: Record<string, string> = { dispatched: 'mailed', letter_drafted: 'letter ready' }
+const stepLabel = (s: string) => STEP_LABELS[s] ?? s.replace(/_/g, ' ')
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -20,7 +23,7 @@ function StatusBadge({ status }: { status: string }) {
   }
   return (
     <span className={`text-xs font-medium border px-3 py-1 rounded-full ${colors[status] ?? 'text-[#6B7280]'}`}>
-      {status.replace(/_/g, ' ').toUpperCase()}
+      {stepLabel(status).toUpperCase()}
     </span>
   )
 }
@@ -109,7 +112,7 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                     <div key={step} className="flex items-center">
                       <div className={`flex flex-col items-center ${i < stepIndex ? 'opacity-100' : i === stepIndex ? 'opacity-100' : 'opacity-30'}`}>
                         <div className={`w-3 h-3 rounded-full ${i < stepIndex ? 'bg-[#F97316]' : i === stepIndex ? 'bg-[#F97316] ring-2 ring-[#F97316]/30' : 'bg-[#6B7280]'}`} />
-                        <span className="text-xs text-[#6B7280] mt-1 whitespace-nowrap">{step.replace(/_/g, ' ')}</span>
+                        <span className="text-xs text-[#6B7280] mt-1 whitespace-nowrap">{stepLabel(step)}</span>
                       </div>
                       {i < TIMELINE_STEPS.length - 1 && (
                         <div className={`h-px w-8 mx-1 mt-[-10px] ${i < stepIndex ? 'bg-[#F97316]' : 'bg-[#6B7280]'}`} />
@@ -167,6 +170,10 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                             >
                               Download PDF
                             </a>
+                            <MarkMailedButton
+                              letterId={letter.id}
+                              sentAt={(letter.dispatch_records ?? []).find((d) => d.sent_at)?.sent_at ?? null}
+                            />
                           </div>
                           <pre className="text-xs text-[#6B7280] whitespace-pre-wrap font-mono leading-relaxed max-h-48 overflow-y-auto">
                             {letter.content}

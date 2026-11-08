@@ -30,13 +30,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { data: dispatch } = await supabase
-      .from('dispatch_records')
-      .select('*')
-      .eq('status', 'no_response')
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .single()
+    // Original mailing date for THIS item only (earliest letter the consumer marked as mailed).
+    const { data: itemLetters } = await supabase
+      .from('letters')
+      .select('id')
+      .eq('dispute_item_id', disputeItemId)
+    const letterIds = (itemLetters ?? []).map((l: { id: string }) => l.id)
+
+    const { data: dispatch } = letterIds.length
+      ? await supabase
+          .from('dispatch_records')
+          .select('*')
+          .in('letter_id', letterIds)
+          .not('sent_at', 'is', null)
+          .order('sent_at', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+      : { data: null }
 
     const orchestratorItem: OrchestratorItem = {
       type: item.type,
@@ -65,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     await supabase
       .from('dispute_items')
-      .update({ round: newRound, status: 'dispatched' })
+      .update({ round: newRound, status: 'letter_drafted' })
       .eq('id', disputeItemId)
 
     const { data: r2Letter } = await supabase
@@ -81,16 +91,11 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (r2Letter) {
-      const sentAt = new Date()
-      const responseDueAt = new Date(sentAt)
-      responseDueAt.setDate(responseDueAt.getDate() + 30)
+      // Queued until the consumer marks the round-2 letter as mailed.
       await supabase.from('dispatch_records').insert({
         letter_id: r2Letter.id,
         bureau: item.bureau,
-        tracking_number: `EX-ESC-${Date.now()}`,
-        status: 'sent',
-        sent_at: sentAt.toISOString(),
-        response_due_at: responseDueAt.toISOString(),
+        status: 'queued',
       })
     }
 

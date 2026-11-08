@@ -15,7 +15,7 @@ const UPGRADE_CTA: Record<string, { label: string; href: string }> = {
   free: { label: 'Upgrade to Pro', href: '/checkout?plan=pro' },
   basic: { label: 'Upgrade to Pro', href: '/checkout?plan=pro' },
   pro: { label: 'Upgrade to Partner', href: '/checkout?plan=partner' },
-  partner: { label: 'Contact Sales', href: '/pricing' },
+  partner: { label: 'See plans', href: '/pricing' },
 }
 
 export default async function BillingPage() {
@@ -121,7 +121,7 @@ export default async function BillingPage() {
               >
                 {isHighlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#F97316] text-white text-xs font-bold px-4 py-1 rounded-full">
-                    MOST POPULAR
+                    RECOMMENDED
                   </div>
                 )}
 
