@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
-import { PLANS } from '@/lib/square/client'
+import { getUserPlan } from '@/lib/square/subscription'
+import { getSponsoringFirm } from '@/lib/partner/server'
 
 const STATUS_COLORS: Record<string, string> = {
   analyzing: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
@@ -46,15 +47,15 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  const { data: sub } = await supabase
-    .from('subscriptions')
-    .select('plan, status')
-    .eq('user_id', user.id)
-    .single()
-
-  const currentPlan = (sub?.plan ?? 'free') as keyof typeof PLANS
-  const isFreeTier = currentPlan === 'free'
-  const isBasicTier = currentPlan === 'basic'
+  // Effective plan: a client invited by a firm with an active firm plan is
+  // covered at Pro level and never sees upgrade prompts.
+  const [userPlan, firm] = await Promise.all([
+    getUserPlan(user.id),
+    getSponsoringFirm(user.id),
+  ])
+  const sponsored = userPlan.sponsored
+  const isFreeTier = !sponsored && userPlan.plan === 'free'
+  const isBasicTier = !sponsored && userPlan.plan === 'basic'
 
   const totalItems = cases?.flatMap((c) => c.dispute_items).length ?? 0
   const removedItems = cases?.flatMap((c) => c.dispute_items).filter((i) => i.status === 'removed').length ?? 0
@@ -68,7 +69,7 @@ export default async function DashboardPage() {
           <ExpungeLogo variant="primary" width={160} height={40} />
         </Link>
         <div className="flex items-center gap-4">
-          <Link href="/billing" className="text-sm text-[#6B7280] hover:text-[#111827] transition">Billing</Link>
+          {!sponsored && <Link href="/billing" className="text-sm text-[#6B7280] hover:text-[#111827] transition">Billing</Link>}
           <span className="text-[#6B7280] text-sm">{profile?.full_name || user.email}</span>
           <Link href="/upload" className="bg-[#F97316] hover:bg-[#EA580C] transition px-4 py-2.5 rounded-lg text-sm font-bold text-white">
             + New dispute
@@ -90,6 +91,24 @@ export default async function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* Firm banner */}
+        {firm && (
+          <div className="mb-10 bg-white border border-[#E5E7EB] rounded-2xl p-5 flex items-center gap-4">
+            {firm.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={firm.logoUrl} alt="" className="h-10 w-10 object-contain" />
+            )}
+            <div className="text-sm">
+              <div className="font-semibold text-[#111827]">Provided by {firm.firmName}</div>
+              {sponsored ? (
+                <div className="text-[#6B7280]">Your Expunge access is covered by {firm.firmName}.</div>
+              ) : isFreeTier ? (
+                <div className="text-[#6B7280]">{firm.firmName}&apos;s plan isn&apos;t active right now, so you&apos;re on the free tier.</div>
+              ) : null}
+            </div>
+          </div>
+        )}
 
         {/* Upgrade banner */}
         {isFreeTier && (

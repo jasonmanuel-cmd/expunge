@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
+import { PLANS } from '@/lib/square/client'
+import { isFirmPlanActive } from '@/lib/partner/firm'
+import FirmSettingsForm from './FirmSettingsForm'
 
 const STATUS_COLORS: Record<string, string> = {
   analyzing: 'text-yellow-400',
@@ -37,6 +40,20 @@ export default async function PartnerDashboardPage() {
     `)
     .eq('partner_id', user.id)
 
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('plan, status')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  const planActive = isFirmPlanActive(sub?.plan, sub?.status)
+
+  const { data: settings } = await supabase
+    .from('partner_settings')
+    .select('firm_name, logo_url, invite_code')
+    .eq('partner_id', user.id)
+    .maybeSingle()
+  const firmName = settings?.firm_name ?? ''
+
   const totalClients = clients?.length ?? 0
   const activeClients = clients?.filter((c) =>
     (c.cases as { status: string }[] ?? []).some((cas) => ['active', 'monitoring', 'escalated'].includes(cas.status))
@@ -47,13 +64,44 @@ export default async function PartnerDashboardPage() {
       <header className="border-b border-[#E5E7EB] px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ExpungeLogo variant="primary" width={160} height={40} />
-          <span className="ml-2 text-xs bg-[#F97316]/20 text-[#F97316] px-2 py-0.5 rounded-full">Partner</span>
+          <span className="ml-2 text-xs bg-[#F97316]/20 text-[#F97316] px-2 py-0.5 rounded-full">Firm</span>
         </div>
-        <span className="text-[#6B7280] text-sm">{profile?.full_name || user.email}</span>
+        <div className="flex items-center gap-4">
+          {planActive && <Link href="/billing" className="text-sm text-[#6B7280] hover:text-[#111827] transition">Billing</Link>}
+          <span className="text-[#6B7280] text-sm">{firmName || profile?.full_name || user.email}</span>
+        </div>
       </header>
 
       <div className="max-w-6xl mx-auto px-8 py-10">
-        <h1 className="text-2xl font-bold mb-8">Partner Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-8">{firmName ? `${firmName} dashboard` : 'Firm dashboard'}</h1>
+
+        {/* Plan status */}
+        {planActive ? (
+          <div className="mb-6 bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl p-5 text-sm">
+            <span className="font-semibold text-[#16A34A]">Firm plan active.</span>{' '}
+            Every client who joins with your invite link gets full Pro access at no cost to them.
+          </div>
+        ) : (
+          <div className="mb-6 bg-gradient-to-r from-[#F97316] to-[#EA580C] rounded-2xl p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-orange-200">
+            <div>
+              <div className="font-bold text-lg">Start your firm plan</div>
+              <div className="text-white/80 text-sm mt-0.5">
+                {PLANS.partner.priceLabel} covers all your clients. Until it&apos;s active, clients who join stay on the free tier.
+              </div>
+            </div>
+            <Link href="/checkout?plan=partner" className="bg-white text-[#F97316] hover:bg-orange-50 transition font-bold px-6 py-3 rounded-xl text-sm whitespace-nowrap shadow-md">
+              Start firm plan →
+            </Link>
+          </div>
+        )}
+
+        <div className="mb-10">
+          <FirmSettingsForm
+            initialFirmName={firmName}
+            initialLogoUrl={settings?.logo_url ?? ''}
+            initialInviteCode={settings?.invite_code ?? null}
+          />
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-10">
@@ -74,7 +122,7 @@ export default async function PartnerDashboardPage() {
           <div className="bg-[#FFFFFF] border border-[#E5E7EB] rounded-2xl p-16 text-center">
             <div className="text-5xl mb-4">👥</div>
             <div className="font-semibold text-lg mb-2">No clients yet</div>
-            <div className="text-[#6B7280] text-sm">Clients will appear here once they link to your partner account</div>
+            <div className="text-[#6B7280] text-sm">Clients appear here once they sign up with your invite link</div>
           </div>
         ) : (
           <div className="space-y-3">

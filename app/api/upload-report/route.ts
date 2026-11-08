@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { assertPlanLimit } from '@/lib/square/subscription'
 
 /**
  * POST /api/upload-report
@@ -14,16 +15,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Content-Type must be multipart/form-data' }, { status: 400 })
     }
 
+    // The case belongs to the signed-in user, never to a userId the client sends.
+    const authClient = await createClient()
+    const { data: { user } } = await authClient.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Please log in again.' }, { status: 401 })
+    }
+    const userId = user.id
+
     const formData = await req.formData()
     const file = formData.get('file') as File | null
-    const userId = formData.get('userId') as string | null
+    const claimedUserId = formData.get('userId') as string | null
+    if (claimedUserId && claimedUserId !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded. Please select a file.' }, { status: 400 })
     }
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required. Please log in again.' }, { status: 401 })
+    // Enforce the plan's active-case limit (firm-sponsored clients get Pro limits).
+    const limit = await assertPlanLimit(userId, 'cases')
+    if (!limit.allowed) {
+      return NextResponse.json({ error: limit.reason, upgradeTo: limit.upgradeTo }, { status: 402 })
     }
 
     // Validate file type

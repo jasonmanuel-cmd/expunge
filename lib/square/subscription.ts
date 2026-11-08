@@ -1,4 +1,6 @@
 import { createServiceClient } from '@/lib/supabase/server'
+import { resolveEffectivePlan } from '@/lib/partner/firm'
+import { getSponsoringFirm } from '@/lib/partner/server'
 
 export type PlanTier = 'free' | 'basic' | 'pro' | 'partner'
 
@@ -11,6 +13,9 @@ export interface UserPlan {
   escalation: boolean
   partnerDashboard: boolean
   isActive: boolean
+  /** True when the user's access is paid for by the firm that invited them. */
+  sponsored: boolean
+  sponsorFirmName: string | null
 }
 
 export async function getUserPlan(userId: string): Promise<UserPlan> {
@@ -22,18 +27,27 @@ export async function getUserPlan(userId: string): Promise<UserPlan> {
     .eq('user_id', userId)
     .single()
 
-  const plan = (sub?.plan ?? 'free') as PlanTier
+  const ownPlan = (sub?.plan ?? 'free') as PlanTier
   const status = sub?.status ?? 'active'
-  const isActive = status === 'active' || status === 'trialing'
+  const ownActive = status === 'active' || status === 'trialing'
+
+  // Clients invited by a firm with an active Partner plan are covered by the firm.
+  const firm = ownActive && ownPlan !== 'free' ? null : await getSponsoringFirm(userId)
+  const { plan, sponsored } = resolveEffectivePlan({
+    ownPlan,
+    ownActive,
+    firmActive: firm?.active ?? false,
+  })
+  const isActive = ownActive || sponsored
 
   const { data: limits } = await supabase
     .from('plan_limits')
     .select('*')
-    .eq('plan', isActive ? plan : 'free')
+    .eq('plan', plan)
     .single()
 
   return {
-    plan: isActive ? plan : 'free',
+    plan,
     status,
     maxCases: limits?.max_cases ?? 1,
     maxItems: limits?.max_items_per_case ?? 3,
@@ -41,6 +55,8 @@ export async function getUserPlan(userId: string): Promise<UserPlan> {
     escalation: limits?.escalation_bot ?? false,
     partnerDashboard: limits?.partner_dashboard ?? false,
     isActive,
+    sponsored,
+    sponsorFirmName: sponsored ? firm?.firmName ?? null : null,
   }
 }
 
