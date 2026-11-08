@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/server'
+import { resolveWebhookUpdate } from '@/lib/square/webhook'
 
 // Square sends webhook events — we verify signature then update subscription state
 export async function POST(req: NextRequest) {
   try {
     const body = await req.text()
     const signature = req.headers.get('x-square-hmacsha256-signature') ?? ''
-    const sigKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY!
+    const sigKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY
+    if (!sigKey) {
+      console.error('SQUARE_WEBHOOK_SIGNATURE_KEY is not set')
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
+    }
     const url = `${process.env.NEXT_PUBLIC_APP_URL}/api/square/webhook`
 
     // Verify Square HMAC-SHA256 signature (Square docs: HMAC of url+body, base64 encoded)
@@ -20,72 +25,16 @@ export async function POST(req: NextRequest) {
     }
 
     const event = JSON.parse(body)
+    const update = resolveWebhookUpdate(event)
+    if (!update) return NextResponse.json({ received: true })
+
     const supabase = createServiceClient()
-
-    const subData = event.data?.object?.subscription
-    const squareSubId: string | undefined = subData?.id
-
-    if (!squareSubId) return NextResponse.json({ received: true })
-
-    // Map Square subscription statuses to our schema
-    const statusMap: Record<string, string> = {
-      ACTIVE:        'active',
-      CANCELED:      'canceled',
-      DEACTIVATED:   'canceled',
-      PAUSED:        'paused',
-      PENDING:       'trialing',
-    }
-
-    const squareStatus: string = subData?.status ?? 'ACTIVE'
-    const ourStatus = statusMap[squareStatus] ?? 'active'
-
-    switch (event.type) {
-      case 'subscription.created':
-      case 'subscription.updated': {
-        await supabase
-          .from('subscriptions')
-          .update({
-            status: ourStatus,
-            current_period_start: subData?.charged_through_date
-              ? new Date(subData.charged_through_date).toISOString()
-              : undefined,
-          })
-          .eq('square_subscription_id', squareSubId)
-        break
-      }
-
-      case 'subscription.canceled':
-      case 'subscription.deactivated': {
-        await supabase
-          .from('subscriptions')
-          .update({ status: 'canceled', cancel_at_period_end: true })
-          .eq('square_subscription_id', squareSubId)
-        break
-      }
-
-      case 'invoice.payment_failed': {
-        await supabase
-          .from('subscriptions')
-          .update({ status: 'past_due' })
-          .eq('square_subscription_id', squareSubId)
-        break
-      }
-
-      case 'invoice.payment_made': {
-        const periodEnd = subData?.charged_through_date
-          ? new Date(subData.charged_through_date)
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-
-        await supabase
-          .from('subscriptions')
-          .update({
-            status: 'active',
-            current_period_end: periodEnd.toISOString(),
-          })
-          .eq('square_subscription_id', squareSubId)
-        break
-      }
-    }
+    const { error } = await supabase
+      .from('subscriptions')
+      .update(update.fields)
+      .eq('square_subscription_id', update.squareSubscriptionId)
+    // A non-2xx reply makes Square retry the event later.
+    if (error) throw error
 
     return NextResponse.json({ received: true })
   } catch (err) {
