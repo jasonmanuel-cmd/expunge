@@ -46,11 +46,6 @@ export async function POST(req: NextRequest) {
       if (!customerId) throw new Error('Failed to create Square customer')
     }
 
-    // If already has active subscription, cancel it first (plan change)
-    if (existingSub?.square_subscription_id) {
-      await squareClient.subscriptions.cancel(existingSub.square_subscription_id)
-    }
-
     // Create card on file
     const cardResult = await squareClient.cards.create({
       idempotencyKey: `${userId}-${Date.now()}`,
@@ -74,6 +69,18 @@ export async function POST(req: NextRequest) {
     const squareSubId = subResult.subscription?.id
     if (!squareSubId) throw new Error('Failed to create subscription')
 
+    // Plan change: only cancel the old subscription once the new one exists, so a
+    // failed card never leaves the customer with no plan. Square ends the old one
+    // at the end of its paid period (no further charges).
+    const oldSubId = existingSub?.square_subscription_id
+    if (oldSubId && oldSubId !== squareSubId) {
+      try {
+        await squareClient.subscriptions.cancel(oldSubId)
+      } catch (cancelErr) {
+        console.error('Plan change: could not cancel old subscription', oldSubId, cancelErr)
+      }
+    }
+
     // Persist to Supabase
     await supabase.from('subscriptions').upsert({
       user_id: userId,
@@ -84,6 +91,7 @@ export async function POST(req: NextRequest) {
       square_card_id: cardId,
       current_period_start: startDate.toISOString(),
       current_period_end: new Date(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()).toISOString(),
+      cancel_at_period_end: false,
     }, { onConflict: 'user_id' })
 
     return NextResponse.json({ success: true, plan: planKey })

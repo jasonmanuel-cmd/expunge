@@ -1,3 +1,4 @@
+import { BRAND } from '@/lib/brand'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -162,7 +163,7 @@ export default async function BillingPage() {
         </div>
 
         <div className="text-xs text-[#6B7280] text-center">
-          Questions? Contact us at <span className="text-slate-500">support@expunge.ai</span>
+          Questions? Contact us at <span className="text-slate-500">{BRAND.supportEmail}</span>
         </div>
       </div>
     </div>

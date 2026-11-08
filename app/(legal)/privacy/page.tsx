@@ -1,3 +1,4 @@
+import { BRAND } from '@/lib/brand'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
 
@@ -25,7 +26,7 @@ export default function PrivacyPage() {
           },
           {
             title: 'Credit Report Data',
-            body: 'Credit report text you submit is sensitive financial information. It is stored encrypted in our database, used only to generate your disputes, and is not sold to or shared with third parties. You may request deletion of your credit report data at any time by contacting privacy@expunge.ai.',
+            body: `Credit report text you submit is sensitive financial information. It is stored encrypted in our database, used only to generate your disputes, and is not sold to or shared with third parties. You may request deletion of your credit report data at any time by contacting ${BRAND.privacyEmail}.`,
           },
           {
             title: 'Data Sharing',
@@ -37,11 +38,11 @@ export default function PrivacyPage() {
           },
           {
             title: 'Your Rights',
-            body: 'You have the right to: access, correct, or delete your personal data; opt out of marketing communications; request a copy of your data in a portable format; withdraw consent where processing is consent-based. To exercise these rights, email privacy@expunge.ai.',
+            body: `You have the right to: access, correct, or delete your personal data; opt out of marketing communications; request a copy of your data in a portable format; withdraw consent where processing is consent-based. To exercise these rights, email ${BRAND.privacyEmail}.`,
           },
           {
             title: 'California Residents (CCPA)',
-            body: 'California residents have additional rights under the CCPA including the right to know what personal information is collected and shared, the right to delete, and the right to opt out of sale (we do not sell personal information). To exercise CCPA rights, contact privacy@expunge.ai.',
+            body: `California residents have additional rights under the CCPA including the right to know what personal information is collected and shared, the right to delete, and the right to opt out of sale (we do not sell personal information). To exercise CCPA rights, contact ${BRAND.privacyEmail}.`,
           },
           {
             title: 'Cookies',
@@ -53,7 +54,7 @@ export default function PrivacyPage() {
           },
           {
             title: 'Contact',
-            body: 'For privacy questions or requests: privacy@expunge.ai. We will respond within 30 days.',
+            body: `For privacy questions or requests: ${BRAND.privacyEmail}. We will respond within 30 days.`,
           },
         ].map(({ title, body }) => (
           <div key={title} className="mb-8">

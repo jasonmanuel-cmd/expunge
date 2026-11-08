@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
 import MarkMailedButton from './MarkMailedButton'
+import { RecordOutcome, EscalateButton } from './OutcomeActions'
 
 const TIMELINE_STEPS = ['pending', 'letter_drafted', 'dispatched', 'filed', 'under_review', 'received']
 const OUTCOME_STEPS = ['removed', 'modified', 'verified', 'no_response']
@@ -140,6 +141,10 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                   </div>
                 )}
 
+                {(item.status === 'no_response' || item.status === 'verified') && (
+                  <EscalateButton disputeItemId={item.id} />
+                )}
+
                 {latestOutcome && (
                   <div className="text-xs text-[#6B7280] mb-3">
                     Outcome recorded {new Date(latestOutcome.recorded_at).toLocaleDateString()}
@@ -175,6 +180,12 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                               sentAt={(letter.dispatch_records ?? []).find((d) => d.sent_at)?.sent_at ?? null}
                             />
                           </div>
+                          {(() => {
+                            const awaiting = (letter.dispatch_records ?? []).find(
+                              (d) => d.sent_at && (d.status === 'sent' || d.status === 'no_response')
+                            )
+                            return awaiting ? <RecordOutcome dispatchRecordId={awaiting.id} /> : null
+                          })()}
                           <pre className="text-xs text-[#6B7280] whitespace-pre-wrap font-mono leading-relaxed max-h-48 overflow-y-auto">
                             {letter.content}
                           </pre>

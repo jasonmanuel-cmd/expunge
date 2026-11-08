@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { runEscalationBot } from '@/lib/agents/escalation-bot'
+import { assertPlanLimit } from '@/lib/square/subscription'
 import type { OrchestratorItem } from '@/lib/types'
 
 export async function POST(req: NextRequest) {
@@ -10,6 +11,11 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await authClient.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const gate = await assertPlanLimit(user.id, 'escalation')
+    if (!gate.allowed) {
+      return NextResponse.json({ error: gate.reason, upgradeTo: gate.upgradeTo }, { status: 402 })
     }
 
     const { disputeItemId } = await req.json()
@@ -69,7 +75,9 @@ export async function POST(req: NextRequest) {
       orchestratorItem,
       consumerName,
       originalDate,
-      'No response received within 30-day window',
+      item.status === 'verified'
+        ? 'Bureau verified the item without a reasonable investigation'
+        : 'No response received within 30-day window',
       newRound
     )
 

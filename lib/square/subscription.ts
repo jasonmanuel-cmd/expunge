@@ -72,7 +72,7 @@ export async function assertPlanLimit(
       .from('cases')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .not('status', 'eq', 'completed')
+      .not('status', 'in', '(completed,failed)')
 
     if ((count ?? 0) >= plan.maxCases) {
       return {
@@ -84,7 +84,7 @@ export async function assertPlanLimit(
   }
 
   if (check === 'triBureau' && !plan.triBureau) {
-    return { allowed: false, reason: 'Tri-bureau dispatch requires Pro or Partner.', upgradeTo: 'pro' }
+    return { allowed: false, reason: 'Letters for all 3 bureaus need a paid plan.', upgradeTo: 'pro' }
   }
 
   if (check === 'escalation' && !plan.escalation) {

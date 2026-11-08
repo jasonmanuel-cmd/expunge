@@ -11,7 +11,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Expunge — AI Credit Dispute Automation",
   description:
-    "Expunge analyzes your credit report, applies 30 years of FCRA case law, drafts legally precise dispute letters, and dispatches them to all three bureaus — automatically.",
+    "Expunge reads your credit report, flags items worth disputing, and drafts FCRA-based dispute letters you can download and mail yourself.",
   icons: {
     icon: "/favicon.svg",
     apple: "/icon.svg",
