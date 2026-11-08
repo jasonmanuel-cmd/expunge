@@ -1,4 +1,4 @@
-import { runAgent } from '@/lib/claude'
+import { runAgent } from '@/lib/ai'
 import type { Bureau, OrchestratorItem, SpecialistOutput } from '@/lib/types'
 
 const BUREAU_ADDRESSES: Record<Bureau, string> = {
@@ -53,5 +53,5 @@ ${isCfpbComplaint ? 'NOTE: This is a CFPB complaint — reference the CFPB compl
 
 Write the complete letter now:`
 
-  return runAgent(SYSTEM_PROMPT, prompt, true)
+  return runAgent(SYSTEM_PROMPT, prompt)
 }

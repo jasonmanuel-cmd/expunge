@@ -1,4 +1,4 @@
-import { runAgent } from '@/lib/claude'
+import { runAgent } from '@/lib/ai'
 import type { OrchestratorItem } from '@/lib/types'
 
 const SYSTEM_PROMPT = `You are the Escalation Bot for Expunge.
@@ -30,8 +30,7 @@ export async function runEscalationBot(
       `Draft Round ${round} escalation letter for ${consumerName}.
 Original dispute filed: ${originalDisputeDate}
 Bureau response: ${bureauResponse || 'No response received'}
-Dispute item: ${JSON.stringify(item, null, 2)}`,
-      true
+Dispute item: ${JSON.stringify(item, null, 2)}`
     ),
     runAgent(
       SYSTEM_PROMPT,
@@ -39,8 +38,7 @@ Dispute item: ${JSON.stringify(item, null, 2)}`,
 Original dispute filed: ${originalDisputeDate}
 Bureau response: ${bureauResponse || 'No response received'}
 Dispute item: ${JSON.stringify(item, null, 2)}
-Format as a formal CFPB complaint submission.`,
-      true
+Format as a formal CFPB complaint submission.`
     ),
   ])
 

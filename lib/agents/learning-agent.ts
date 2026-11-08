@@ -1,4 +1,4 @@
-import { runAgent } from '@/lib/claude'
+import { runAgent } from '@/lib/ai'
 import { createServiceClient } from '@/lib/supabase/server'
 import type { DisputeType, Bureau, OutcomeResult } from '@/lib/types'
 
@@ -70,7 +70,7 @@ Extract the learning insight for this outcome.`
 
   let learning: LearningOutput
   try {
-    const response = await runAgent(SYSTEM_PROMPT, userMessage, true)
+    const response = await runAgent(SYSTEM_PROMPT, userMessage)
     const jsonMatch = response.match(/\{[\s\S]*\}/)
     if (!jsonMatch) throw new Error('No JSON in learning response')
     learning = JSON.parse(jsonMatch[0]) as LearningOutput

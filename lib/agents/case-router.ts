@@ -1,4 +1,4 @@
-import { runAgent } from '@/lib/claude'
+import { runAgent } from '@/lib/ai'
 import type { OrchestratorItem, DisputeType } from '@/lib/types'
 
 const SYSTEM_PROMPT = `You are the Case Routing Engine for Expunge.
@@ -37,8 +37,7 @@ export interface RoutedItem {
 export async function routeCases(items: OrchestratorItem[]): Promise<RoutedItem[]> {
   const response = await runAgent(
     SYSTEM_PROMPT,
-    `Route these dispute items to specialist agents:\n\n${JSON.stringify(items, null, 2)}`,
-    true
+    `Route these dispute items to specialist agents:\n\n${JSON.stringify(items, null, 2)}`
   )
 
   try {

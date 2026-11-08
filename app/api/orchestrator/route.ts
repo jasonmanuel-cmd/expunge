@@ -7,7 +7,7 @@ import { generateLetter } from '@/lib/agents/letter-bot'
 import { sendLettersReadyEmail } from '@/lib/email'
 import type { Bureau } from '@/lib/types'
 
-// The full pipeline makes many sequential Claude calls (orchestrator +
+// The full pipeline makes many sequential AI calls (orchestrator +
 // per-item specialist + per-bureau letters), so allow up to 5 minutes.
 export const maxDuration = 300
 
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
     // Step 4: Run specialist agents + generate letters.
     // Each item (specialist + its bureau letters) runs concurrently, and the
     // bureau letters within an item run concurrently too — so total time is
-    // ~the slowest single item rather than the sum of every Claude call. This
+    // ~the slowest single item rather than the sum of every AI call. This
     // keeps the whole pipeline well under the function timeout.
     await Promise.all(
       routedItems.map(async (routed) => {

@@ -6,7 +6,7 @@ Analyzes credit reports, applies 30 years of FCRA case law, drafts legally preci
 
 - **Frontend/Backend:** Next.js 16 (App Router) + TypeScript
 - **Database & Auth:** Supabase (PostgreSQL + Row Level Security)
-- **AI:** Claude API (Anthropic) — all agents use claude-sonnet-4-6 with prompt caching
+- **AI:** OpenAI API — all agents use gpt-6-luna by default (set `OPENAI_MODEL` to change); OpenAI caches repeated prompts automatically
 - **Payments:** Square v44 SDK — subscriptions, webhooks, card on file
 - **Deployed to:** Vercel
 
