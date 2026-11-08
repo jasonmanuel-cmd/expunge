@@ -176,30 +176,22 @@ export async function POST(req: NextRequest) {
               .single()
 
             if (letter) {
-              const sentAt = new Date()
-              const responseDueAt = new Date(sentAt)
-              responseDueAt.setDate(responseDueAt.getDate() + 30)
-
+              // Expunge does not mail letters. The record waits as 'queued' until
+              // the consumer marks the letter as mailed (POST /api/letters/[id]/mark-sent),
+              // which starts the 30-day response window.
               await supabase.from('dispatch_records').insert({
                 letter_id: letter.id,
                 bureau,
-                tracking_number: `EX-${Date.now()}-${bureau.slice(0, 3).toUpperCase()}`,
-                status: 'sent',
-                sent_at: sentAt.toISOString(),
-                response_due_at: responseDueAt.toISOString(),
+                status: 'queued',
               })
             }
           })
         )
 
-        await supabase
-          .from('dispute_items')
-          .update({ status: 'dispatched' })
-          .eq('id', dbItem.id)
       })
     )
 
-    await supabase.from('cases').update({ status: 'monitoring' }).eq('id', caseId)
+    await supabase.from('cases').update({ status: 'active' }).eq('id', caseId)
 
     // Send email notification
     const userEmail = profile?.email

@@ -20,7 +20,7 @@ export async function GET(
 
     const { data: letter } = await supabase
       .from('letters')
-      .select('*, dispute_items(cases(profiles(full_name, email)))')
+      .select('*, dispute_items(cases(user_id, profiles(full_name, email)))')
       .eq('id', id)
       .single()
 

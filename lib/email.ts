@@ -25,8 +25,8 @@ export async function sendLettersReadyEmail(
     await resend!.emails.send({
       from: FROM,
       to,
-      subject: `Your dispute letters are ready — ${itemCount} items filed`,
-      text: `Hi ${name},\n\nYour dispute letters have been generated and are ready for download.\n\nItems disputed: ${itemCount}\n\nView them in your dashboard:\n${process.env.NEXT_PUBLIC_APP_URL}/disputes/${caseId}\n\nYou can download each letter as a PDF from the detail view.\n\n— Expunge`,
+      subject: `Your dispute letters are ready to mail — ${itemCount} items`,
+      text: `Hi ${name},\n\nYour dispute letters have been generated and are ready for download.\n\nItems disputed: ${itemCount}\n\nView them in your dashboard:\n${process.env.NEXT_PUBLIC_APP_URL}/disputes/${caseId}\n\nExpunge does not mail letters for you. Download each letter as a PDF from the detail view, mail it to the bureau (certified mail with return receipt is a good idea), then click "I mailed this" next to the letter so we can track the 30-day response window.\n\n— Expunge`,
     })
   } catch (err) {
     console.error('[Email] Failed to send letters-ready notification:', err)

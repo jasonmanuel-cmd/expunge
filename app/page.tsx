@@ -73,10 +73,10 @@ export default function HomePage() {
               {/* Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-8" style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '2rem' }}>
                 {[
-                  { value: '50K+', label: 'Disputes prepared' },
-                  { value: '$4.2M+', label: 'Debt challenged' },
-                  { value: '94%', label: 'Bureau response rate' },
-                  { value: '< 5min', label: 'To first letter' },
+                  { value: '3', label: 'Bureaus covered' },
+                  { value: 'FCRA', label: 'Letters cite federal law' },
+                  { value: 'PDF', label: 'Ready-to-mail letters' },
+                  { value: '$0', label: 'To scan your first report' },
                 ].map((s) => (
                   <div key={s.label}>
                     <div className="text-2xl sm:text-3xl font-bold" style={{ color: 'rgba(0,0,0,0.95)' }}>{s.value}</div>
@@ -146,7 +146,7 @@ export default function HomePage() {
           <div className="mt-16 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm" style={{ color: '#a39e98' }}>
             <span className="flex items-center gap-2">
               <svg className="w-4 h-4 text-[#16A34A]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-              Bank-grade encryption
+              Encrypted in transit and at rest
             </span>
             <span className="flex items-center gap-2">
               <svg className="w-4 h-4 text-[#16A34A]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
@@ -313,63 +313,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 sm:py-32 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: '#F0FDF4', color: '#16A34A', border: '1px solid rgba(0,0,0,0.08)' }}>
-              Real results
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ color: 'rgba(0,0,0,0.95)', letterSpacing: '-1.5px' }}>
-              Real people. Real results.
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                label: 'Fired my credit repair company',
-                quote: "I spent $2,000 on a credit repair company last year. Expunge did better work in 2 weeks for a fraction of the cost.",
-                name: 'Sarah K.',
-                detail: '12 disputes filed, 9 successful',
-              },
-              {
-                label: 'From declined to approved',
-                quote: "Expunge removed 7 negative items from my credit report in the first month. My score jumped 84 points.",
-                name: 'Marcus T.',
-                detail: 'Score improved from 542 to 626',
-              },
-              {
-                label: 'Stopped a debt collector',
-                quote: "The AI letters are incredibly detailed. Each one cited specific FCRA violations I never knew existed. This is the real deal.",
-                name: 'James R.',
-                detail: 'Debt collector stopped contacting me',
-              },
-            ].map((t) => (
-              <div
-                key={t.name}
-                className="rounded-2xl p-8 flex flex-col"
-                style={{ backgroundColor: '#f6f5f4', border: '1px solid rgba(0,0,0,0.06)' }}
-              >
-                <span className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#F97316' }}>{t.label}</span>
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-4 h-4 text-[#F59E0B]" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="leading-relaxed mb-6 flex-1" style={{ color: '#374151' }}>&quot;{t.quote}&quot;</p>
-                <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '1rem' }}>
-                  <div className="font-semibold" style={{ color: 'rgba(0,0,0,0.95)' }}>{t.name}</div>
-                  <div className="text-sm" style={{ color: '#615d59' }}>{t.detail}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Pricing */}
       <section id="pricing" className="py-24 sm:py-32" style={{ backgroundColor: '#f6f5f4' }}>
         <div className="max-w-6xl mx-auto px-6">
@@ -422,14 +365,14 @@ export default function HomePage() {
                 ))}
               </ul>
               <Link href="/register?plan=basic" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block" style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#374151' }}>
-                Start free trial
+                Choose Basic
               </Link>
             </div>
 
             {/* Pro */}
             <div className="relative rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '2px solid #F97316', boxShadow: '0 8px 32px rgba(249,115,22,0.12)' }}>
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#F97316] text-white text-xs font-bold px-4 py-1 rounded-full">
-                MOST POPULAR
+                RECOMMENDED
               </div>
               <div className="mb-6">
                 <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Pro</div>
@@ -445,28 +388,28 @@ export default function HomePage() {
                 ))}
               </ul>
               <Link href="/register?plan=pro" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block bg-[#F97316] hover:bg-[#EA580C] text-white" style={{ boxShadow: '0 4px 16px rgba(249,115,22,0.3)' }}>
-                Start free trial
+                Choose Pro
               </Link>
             </div>
 
             {/* Partner */}
             <div className="rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '1px dashed rgba(0,0,0,0.15)' }}>
               <div className="mb-6">
-                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Partner <span className="text-xs text-[#F97316] font-bold">(AI Concierge – coming soon)</span></div>
+                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Partner <span className="text-xs text-[#F97316] font-bold">(for tax and finance firms)</span></div>
                 <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$299.99 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>/mo</span></div>
-                <div className="text-sm" style={{ color: '#615d59' }}>We&apos;ll handle the heavy lifting.</div>
+                <div className="text-sm" style={{ color: '#615d59' }}>Offer it to every client you serve.</div>
               </div>
               <ul className="space-y-3 mb-6 flex-1">
-                {['Everything in Pro', 'We will handle sending disputes to all three bureaus for you', 'We will track timelines, responses, and outcomes', 'We will prepare escalation letters and guidance', 'Ideal for busy professionals and credit repair businesses', 'Early access, founder pricing, and white-label options'].map((f) => (
+                {['Everything in Pro for every client you invite', 'Your firm name and logo on client sign-up and dashboard', 'One private invite link for all your clients', 'Dashboard showing each client and their disputes', 'One flat monthly price, no per-client billing'].map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
                     {CHECK}
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <p className="text-xs mb-4" style={{ color: '#a39e98' }}>AI Concierge is expected to launch in about 6 months. Until then, Expunge provides document generation and instructions only — you send disputes yourself.</p>
-              <Link href="/register" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block" style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#374151' }}>
-                Join waitlist
+              <p className="text-xs mb-4" style={{ color: '#a39e98' }}>Expunge prepares the letters and instructions. Your clients mail their own disputes.</p>
+              <Link href="/for-tax-pros" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block" style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#374151' }}>
+                See the firm plan
               </Link>
             </div>
           </div>
@@ -489,7 +432,7 @@ export default function HomePage() {
           >
             Get started free
           </Link>
-          <p className="text-sm mt-4" style={{ color: 'rgba(255,255,255,0.35)' }}>No credit card required · Cancel anytime · You stay in control of every dispute</p>
+          <p className="text-sm mt-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Free plan needs no credit card · Cancel paid plans anytime · You mail every dispute yourself</p>
         </div>
       </section>
 

@@ -73,7 +73,7 @@ export default async function PricingPage() {
               >
                 {isHighlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#F97316] text-white text-xs font-bold px-4 py-1 rounded-full">
-                    MOST POPULAR
+                    RECOMMENDED
                   </div>
                 )}
 
@@ -109,7 +109,7 @@ export default async function PricingPage() {
                         : 'border-2 border-[#E5E7EB] hover:border-[#D1D5DB] bg-white text-[#374151] hover:bg-[#F5F5F7]'
                     }`}
                   >
-                    {key === 'free' ? plan.cta : `Start free — ${plan.priceLabel}`}
+                    {key === 'free' ? plan.cta : `Choose ${plan.name} — ${plan.priceLabel}`}
                   </Link>
                 )}
               </div>

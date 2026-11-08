@@ -174,7 +174,7 @@ export default async function DashboardPage() {
                       <div className="text-xs font-medium truncate">{item.account_name}</div>
                       <div className="text-xs text-[#6B7280] capitalize">{item.type.replace('_', ' ')} · {item.bureau}</div>
                       <div className={`text-xs font-medium mt-1 ${ITEM_STATUS_COLORS[item.status] ?? 'text-[#6B7280]'}`}>
-                        {item.status.replace('_', ' ')}
+                        {item.status === 'dispatched' ? 'mailed' : item.status === 'letter_drafted' ? 'letter ready' : item.status.replace('_', ' ')}
                       </div>
                     </div>
                   ))}
