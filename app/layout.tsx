@@ -9,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Expunge | Find credit report errors and draft your own dispute letters",
+  title: "Expunge | Credit report review software for tax and finance firms",
   description:
-    "Expunge reads your credit report, flags items that may be inaccurate, and drafts dispute letters you mail yourself. Free plan available. Results vary.",
+    "White-label credit report review for tax and finance firms. Clients see items that may be inaccurate and get dispute letters they mail themselves. Results vary.",
   icons: {
     icon: "/favicon.svg",
     apple: "/icon.svg",

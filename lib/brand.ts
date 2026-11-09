@@ -9,6 +9,8 @@ export const BRAND = {
   name: process.env.NEXT_PUBLIC_BRAND_NAME || 'Expunge',
   domain,
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || `support@${domain}`,
+  /** Where "Book a demo" requests go. Set NEXT_PUBLIC_SALES_EMAIL to an inbox someone reads. */
+  salesEmail: process.env.NEXT_PUBLIC_SALES_EMAIL || process.env.NEXT_PUBLIC_SUPPORT_EMAIL || `support@${domain}`,
   legalEmail: process.env.NEXT_PUBLIC_LEGAL_EMAIL || `legal@${domain}`,
   privacyEmail: process.env.NEXT_PUBLIC_PRIVACY_EMAIL || `privacy@${domain}`,
   /** Sender for transactional email. The domain must be verified in Resend. */
