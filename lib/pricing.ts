@@ -8,6 +8,11 @@
  *   - 'partner_annual' yearly flat license, as a yearly Square subscription
  *                      (SQUARE_PLAN_FIRM_ANNUAL_ID) or by invoice
  *
+ * Each offer includes a number of client seats (clientSeats). A seat is one
+ * client linked to the firm. A firm that needs more asks through
+ * MORE_SEATS_URL, and its seat count is raised on its subscription row
+ * (subscriptions.client_seats), which overrides the plan default.
+ *
  * Prices here are display text and checkout copy. What Square actually charges
  * is set on the plan in Square, so a price change here also needs a new plan
  * variation in Square with the same amount.
@@ -26,6 +31,11 @@ export interface FirmOffer {
   billedAs: string
   description: string
   features: string[]
+  /**
+   * Client seats included: how many clients can be linked to the firm at once.
+   * Null for quoted deals, where the seat count is set per agreement.
+   */
+  clientSeats: number | null
 }
 
 export const FIRM_MONTHLY: FirmOffer = {
@@ -36,8 +46,9 @@ export const FIRM_MONTHLY: FirmOffer = {
   unit: '/mo',
   billedAs: 'billed monthly, cancel any time',
   description: 'For a single firm or office.',
+  clientSeats: 50,
   features: [
-    'Unlimited client logins from your invite link',
+    'Up to 50 active clients from your invite link',
     'Your firm name and logo on client pages',
     'Dashboard with every client and their disputes',
     'Report review and letter drafting',
@@ -54,8 +65,10 @@ export const FIRM_ANNUAL: FirmOffer = {
   unit: '/yr',
   billedAs: 'one flat payment per year, card or invoice',
   description: 'Everything in Firm Monthly for one flat yearly fee. Two months free.',
+  clientSeats: 100,
   features: [
-    'Everything in Firm Monthly',
+    'Up to 100 active clients',
+    'Everything else in Firm Monthly',
     'One payment a year, no monthly charges',
     'Pay by card or by invoice',
     'Priority onboarding call',
@@ -70,7 +83,9 @@ export const FIRM_CUSTOM: FirmOffer = {
   unit: '',
   billedAs: 'quoted per deal',
   description: 'For networks, franchises and companies that want to run it under their own brand or own a copy outright.',
+  clientSeats: null,
   features: [
+    'Client seats sized to your volume',
     'Multiple offices under one account',
     'Your own domain and brand',
     'Source-code license or outright purchase',
@@ -85,6 +100,20 @@ export const CHECKOUT_OFFERS: Record<FirmBillingKey, FirmOffer> = {
   partner: FIRM_MONTHLY,
   partner_annual: FIRM_ANNUAL,
 }
+
+/**
+ * Seats for a firm whose subscription row has no seat count saved (rows from
+ * before seats existed, or an invoiced license activated without one).
+ */
+export const DEFAULT_CLIENT_SEATS = FIRM_MONTHLY.clientSeats as number
+
+/** Seats a checkout grants, saved on the firm's subscription row. */
+export function seatsForBillingKey(key: FirmBillingKey): number {
+  return CHECKOUT_OFFERS[key].clientSeats ?? DEFAULT_CLIENT_SEATS
+}
+
+/** Where a firm asks for more seats than its plan includes. */
+export const MORE_SEATS_URL = '/demo?interest=seats'
 
 export function isFirmBillingKey(value: unknown): value is FirmBillingKey {
   return value === 'partner' || value === 'partner_annual'

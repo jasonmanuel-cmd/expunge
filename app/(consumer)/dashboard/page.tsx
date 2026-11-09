@@ -102,6 +102,8 @@ export default async function DashboardPage() {
               <div className="font-semibold text-[#111827]">Provided by {firm.firmName}</div>
               {sponsored ? (
                 <div className="text-[#6B7280]">Your Expunge access is covered by {firm.firmName}.</div>
+              ) : notCovered && firm.active && !firm.seated ? (
+                <div className="text-[#6B7280]">{firm.firmName} has used all of its client seats, so new reviews are paused for your account. Your past letters are still here. Ask {firm.firmName} to free up a seat or add more.</div>
               ) : notCovered ? (
                 <div className="text-[#6B7280]">{firm.firmName}&apos;s plan isn&apos;t active right now, so new reviews are paused. Your past letters are still here.</div>
               ) : null}

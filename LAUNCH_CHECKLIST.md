@@ -30,6 +30,15 @@ under Authentication → Password.
 
 ---
 
+## BLOCKER #1b: Client seats migration (Nov 9 2026)
+
+Run `supabase/migrations/010_client_seats.sql` in the Supabase SQL editor
+before deploying the client seat cap. It adds `subscriptions.client_seats`.
+Without it the app still runs, but every firm gets the default 50 seats and
+checkout can't save the annual plan's 100. See `docs/FIRM_LICENSES.md`.
+
+---
+
 ## BLOCKER #2: Square Production (firms-only plans, Nov 9 2026)
 
 Expunge is sold only to businesses. The old consumer plans (Basic, Pro) are

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { normalizeInviteCode } from '@/lib/partner/firm'
-import { getFirmByInviteCode } from '@/lib/partner/server'
+import { getFirmByInviteCode, getFirmSeats } from '@/lib/partner/server'
 
 /**
  * POST /api/partner/join
  * Body: { code: string }
  * Links the signed-in client to the firm that owns the invite code.
  * (New signups are linked automatically by the signup trigger; this covers
- * people who already had an account.)
+ * people who already had an account.) Refused when the firm has no open
+ * client seat.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -46,6 +47,14 @@ export async function POST(req: NextRequest) {
     }
 
     if (!existing) {
+      // Each linked client takes one of the firm's client seats.
+      const seats = await getFirmSeats(firm.partnerId)
+      if (seats.full) {
+        return NextResponse.json(
+          { error: `${firm.firmName} has no open client seats right now. Ask them to free one up or add more, then open this link again.`, code: 'SEATS_FULL' },
+          { status: 409 }
+        )
+      }
       const { error } = await supabase
         .from('partner_clients')
         .insert({ partner_id: firm.partnerId, consumer_id: user.id })

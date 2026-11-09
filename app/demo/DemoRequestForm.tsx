@@ -12,16 +12,18 @@ export default function DemoRequestForm({
   initialInterest = 'demo',
 }: {
   to: string
-  initialInterest?: 'demo' | 'license'
+  initialInterest?: 'demo' | 'license' | 'seats'
 }) {
   const [opened, setOpened] = useState(false)
   const isLicense = initialInterest === 'license'
+  const isSeats = initialInterest === 'seats'
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
     const get = (k: string) => String(f.get(k) ?? '').trim()
-    const subject = `${get('interest').startsWith('Demo') ? 'Demo request' : 'License request'}: ${get('firm') || 'firm'}`
+    const kind = get('interest')
+    const subject = `${kind.startsWith('Demo') ? 'Demo request' : kind.startsWith('More client seats') ? 'Seat request' : 'License request'}: ${get('firm') || 'firm'}`
     const body = [
       `Interested in: ${get('interest')}`,
       `Name: ${get('name')}`,
@@ -61,9 +63,10 @@ export default function DemoRequestForm({
       </label>
       <label className={`${label} sm:col-span-2`}>
         Interested in
-        <select name="interest" className={input} defaultValue={isLicense ? 'Annual license (invoice)' : 'Demo'}>
+        <select name="interest" className={input} defaultValue={isSeats ? 'More client seats' : isLicense ? 'Annual license (invoice)' : 'Demo'}>
           <option>Demo</option>
           <option>Monthly plan</option>
+          <option>More client seats</option>
           <option>Annual license (invoice)</option>
           <option>White-label (our own brand)</option>
           <option>Outright purchase of the software</option>
@@ -99,7 +102,7 @@ export default function DemoRequestForm({
           type="submit"
           className="w-full rounded-xl bg-[#F97316] hover:bg-[#EA580C] py-3.5 text-sm font-bold text-white transition-colors shadow-[0_8px_24px_rgba(249,115,22,0.3)]"
         >
-          {isLicense ? 'Request license terms' : 'Request a demo'}
+          {isSeats ? 'Request more seats' : isLicense ? 'Request license terms' : 'Request a demo'}
         </button>
         <p className="mt-3 text-xs text-[#8A847E]">
           {opened

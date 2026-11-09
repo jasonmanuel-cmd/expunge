@@ -3,6 +3,7 @@ import Link from 'next/link'
 import SiteNav from '@/components/marketing/SiteNav'
 import SiteFooter from '@/components/marketing/SiteFooter'
 import FirmPricing from '@/components/marketing/FirmPricing'
+import { FIRM_MONTHLY, FIRM_ANNUAL } from '@/lib/pricing'
 
 export const metadata: Metadata = {
   title: 'Pricing | Expunge firm licensing',
@@ -21,7 +22,7 @@ export default function PricingPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#FB923C]">Pricing</p>
           <h1 className="mt-3 text-4xl sm:text-5xl font-bold tracking-[-0.03em] text-white">Licensed to firms, not consumers</h1>
           <p className="mt-5 text-lg leading-relaxed text-white/65">
-            Pay monthly, or once a year for a flat license. Every client your firm invites is included and never pays Expunge.
+            Pay monthly for up to {FIRM_MONTHLY.clientSeats} clients, or once a year for a flat license with up to {FIRM_ANNUAL.clientSeats}. Clients your firm invites never pay Expunge.
           </p>
         </div>
       </section>

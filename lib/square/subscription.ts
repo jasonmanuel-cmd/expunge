@@ -16,6 +16,11 @@ export interface UserPlan {
   /** True when the user's access is paid for by the firm that invited them. */
   sponsored: boolean
   sponsorFirmName: string | null
+  /**
+   * True when the client's firm has an active plan but every client seat is
+   * taken by clients who joined earlier, so this client can't start reviews.
+   */
+  seatLimited: boolean
 }
 
 export async function getUserPlan(userId: string): Promise<UserPlan> {
@@ -42,7 +47,8 @@ export async function getUserPlan(userId: string): Promise<UserPlan> {
   const { plan, sponsored } = resolveEffectivePlan({
     ownPlan,
     ownActive,
-    firmActive: firm?.active ?? false,
+    // A client is covered only while holding one of the firm's client seats.
+    firmActive: (firm?.active ?? false) && (firm?.seated ?? false),
   })
   const isActive = ownActive || sponsored
 
@@ -68,11 +74,15 @@ export async function getUserPlan(userId: string): Promise<UserPlan> {
     isActive: covered,
     sponsored,
     sponsorFirmName: sponsored ? firm?.firmName ?? null : null,
+    seatLimited: !covered && !!firm?.active && !firm.seated,
   }
 }
 
 const NOT_COVERED =
   'Your account isn\'t covered by a firm plan right now. Expunge is provided through tax and finance firms: ask the firm that invited you, or use the invite link they sent.'
+
+export const SEAT_LIMITED =
+  'Your firm has used all of its client seats on Expunge, so new reviews are paused for your account. Your past letters are still here. Ask your firm to free up a seat or add more.'
 
 export async function assertPlanLimit(
   userId: string,
@@ -81,7 +91,7 @@ export async function assertPlanLimit(
   const plan = await getUserPlan(userId)
 
   if (!plan.isActive && check !== 'partnerDashboard') {
-    return { allowed: false, reason: NOT_COVERED }
+    return { allowed: false, reason: plan.seatLimited ? SEAT_LIMITED : NOT_COVERED }
   }
 
   if (check === 'cases') {

@@ -74,7 +74,7 @@ const FAQ = [
   },
   {
     q: 'What does it cost my clients?',
-    a: `Nothing from Expunge. Expunge is licensed to your firm for ${FIRM_MONTHLY.priceLabel} or ${FIRM_ANNUAL.priceLabel}, and every client you invite gets full access. Expunge never bills or takes payment from consumers.`,
+    a: `Nothing from Expunge. Expunge is licensed to your firm for ${FIRM_MONTHLY.priceLabel} or ${FIRM_ANNUAL.priceLabel}, and every client you invite is covered by your plan. Expunge never bills or takes payment from consumers.`,
   },
   {
     q: 'Can my firm charge clients for this?',
@@ -83,6 +83,10 @@ const FAQ = [
   {
     q: 'Does Expunge promise results?',
     a: 'No. Only the credit bureaus and the companies that report to them decide what stays on a report. Results vary, and accurate, current information can stay.',
+  },
+  {
+    q: 'How many clients can I invite?',
+    a: `Firm Monthly includes ${FIRM_MONTHLY.clientSeats} active client seats and the Annual License includes ${FIRM_ANNUAL.clientSeats}. Each client who joins takes a seat. Remove a client you no longer serve to free their seat, or ask us for more.`,
   },
   {
     q: 'How is it licensed?',
@@ -216,7 +220,7 @@ export default function HomePage() {
           <div className="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
             {[
               { icon: ICONS.palette, top: 'Your brand', sub: 'Name and logo on client pages' },
-              { icon: ICONS.users, top: 'Every client included', sub: 'No per-client billing' },
+              { icon: ICONS.users, top: `Up to ${FIRM_ANNUAL.clientSeats} clients`, sub: 'No per-client billing' },
               { icon: ICONS.clock, top: 'No new staff', sub: 'Software does the drafting' },
               { icon: ICONS.shield, top: 'Clients mail it', sub: 'Nobody files for them' },
             ].map((t) => (
@@ -348,7 +352,7 @@ export default function HomePage() {
           <div className="text-center max-w-2xl mx-auto">
             <Eyebrow>Pricing</Eyebrow>
             <h2 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-0.03em]">License it monthly or for a flat yearly fee</h2>
-            <p className="mt-4 text-lg text-[#615D59]">No per-client fees. Every client you invite is included.</p>
+            <p className="mt-4 text-lg text-[#615D59]">No per-client fees. Each plan includes a set number of client seats.</p>
           </div>
 
           <div className="mt-16">

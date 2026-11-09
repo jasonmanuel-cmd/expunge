@@ -4,7 +4,7 @@ import SiteNav from '@/components/marketing/SiteNav'
 import SiteFooter from '@/components/marketing/SiteFooter'
 import { Icon, ICONS } from '@/components/marketing/icons'
 import FirmPricing from '@/components/marketing/FirmPricing'
-import { FIRM_MONTHLY } from '@/lib/pricing'
+import { FIRM_MONTHLY, FIRM_ANNUAL } from '@/lib/pricing'
 
 export const metadata: Metadata = {
   title: 'Expunge for Tax Firms | Credit dispute help under your firm name',
@@ -24,7 +24,7 @@ const STEPS = [
 const WHY = [
   { icon: ICONS.calendar, title: 'A reason to stay in touch', body: 'Clients think about credit year round. This gives you a helpful reason to stay in touch after April.' },
   { icon: ICONS.palette, title: 'Your brand, not ours', body: 'Clients see your firm name and logo when they join and every time they open their dashboard.' },
-  { icon: ICONS.users, title: 'No per-client billing', body: 'One flat monthly or annual fee. Invite as many clients as you serve; Expunge never bills them.' },
+  { icon: ICONS.users, title: 'No per-client billing', body: `One flat monthly or annual fee with up to ${FIRM_MONTHLY.clientSeats} or ${FIRM_ANNUAL.clientSeats} client seats. Expunge never bills your clients.` },
   { icon: ICONS.clock, title: 'No new staff', body: 'The software does the report review and letter drafting. Your team answers questions and stays the trusted advisor.' },
 ]
 

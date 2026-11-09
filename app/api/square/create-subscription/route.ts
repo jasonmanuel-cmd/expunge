@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { squareClient, LOCATION_ID, PLAN_IDS } from '@/lib/square/client'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-import { isFirmBillingKey } from '@/lib/pricing'
+import { isFirmBillingKey, seatsForBillingKey } from '@/lib/pricing'
 
 // Only firms can pay Expunge. Consumers (including firm-invited clients) can
 // never start a subscription: the role check below enforces it server-side.
@@ -114,6 +114,15 @@ export async function POST(req: NextRequest) {
       ).toISOString(),
       cancel_at_period_end: false,
     }, { onConflict: 'user_id' })
+
+    // Save the plan's client seats. Kept as a separate write so checkout still
+    // works on a database where migration 010 (client_seats) hasn't run yet;
+    // such a firm gets the default seat count until it does.
+    const { error: seatsError } = await supabase
+      .from('subscriptions')
+      .update({ client_seats: seatsForBillingKey(planKey) })
+      .eq('user_id', userId)
+    if (seatsError) console.error('Could not save client seats for', userId, seatsError.message)
 
     return NextResponse.json({ success: true, plan: planKey })
   } catch (err) {

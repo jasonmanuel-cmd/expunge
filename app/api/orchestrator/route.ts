@@ -5,7 +5,7 @@ import { routeCases } from '@/lib/agents/case-router'
 import { runSpecialistAgent } from '@/lib/agents/specialists'
 import { generateLetter } from '@/lib/agents/letter-bot'
 import { sendLettersReadyEmail } from '@/lib/email'
-import { getUserPlan } from '@/lib/square/subscription'
+import { getUserPlan, SEAT_LIMITED } from '@/lib/square/subscription'
 import type { Bureau } from '@/lib/types'
 
 // The full pipeline makes many sequential AI calls (orchestrator +
@@ -92,7 +92,9 @@ export async function POST(req: NextRequest) {
     const plan = await getUserPlan(user.id)
     if (!plan.isActive) {
       return NextResponse.json(
-        { error: 'Your account isn\'t covered by a firm plan right now. Ask the firm that invited you.', code: 'NOT_COVERED' },
+        plan.seatLimited
+          ? { error: SEAT_LIMITED, code: 'SEAT_LIMIT' }
+          : { error: 'Your account isn\'t covered by a firm plan right now. Ask the firm that invited you.', code: 'NOT_COVERED' },
         { status: 402 }
       )
     }
