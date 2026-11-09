@@ -1,10 +1,11 @@
 import { Resend } from 'resend'
+import { BRAND } from '@/lib/brand'
 
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null
 
-const FROM = 'Expunge <notifications@expunge.ai>'
+const FROM = BRAND.emailFrom
 
 function isConfigured(): boolean {
   if (!resend) {
@@ -26,7 +27,7 @@ export async function sendLettersReadyEmail(
       from: FROM,
       to,
       subject: `Your dispute letters are ready to mail — ${itemCount} items`,
-      text: `Hi ${name},\n\nYour dispute letters have been generated and are ready for download.\n\nItems disputed: ${itemCount}\n\nView them in your dashboard:\n${process.env.NEXT_PUBLIC_APP_URL}/disputes/${caseId}\n\nExpunge does not mail letters for you. Download each letter as a PDF from the detail view, mail it to the bureau (certified mail with return receipt is a good idea), then click "I mailed this" next to the letter so we can track the 30-day response window.\n\n— Expunge`,
+      text: `Hi ${name},\n\nYour dispute letters have been generated and are ready for download.\n\nItems disputed: ${itemCount}\n\nView them in your dashboard:\n${process.env.NEXT_PUBLIC_APP_URL}/disputes/${caseId}\n\n${BRAND.name} does not mail letters for you. Download each letter as a PDF from the detail view, mail it to the bureau (certified mail with return receipt is a good idea), then click "I mailed this" next to the letter so we can track the 30-day response window.\n\n— ${BRAND.name}`,
     })
   } catch (err) {
     console.error('[Email] Failed to send letters-ready notification:', err)
@@ -47,7 +48,7 @@ export async function sendOutcomeEmail(
       from: FROM,
       to,
       subject: `Dispute outcome received — ${accountName} (${bureau})`,
-      text: `Hi ${name},\n\nWe received an outcome for your dispute:\n\nAccount: ${accountName}\nBureau: ${bureau}\nResult: ${result.toUpperCase()}\n\nView full details:\n${process.env.NEXT_PUBLIC_APP_URL}/disputes/${caseId}\n\n— Expunge`,
+      text: `Hi ${name},\n\nWe received an outcome for your dispute:\n\nAccount: ${accountName}\nBureau: ${bureau}\nResult: ${result.toUpperCase()}\n\nView full details:\n${process.env.NEXT_PUBLIC_APP_URL}/disputes/${caseId}\n\n— ${BRAND.name}`,
     })
   } catch (err) {
     console.error('[Email] Failed to send outcome notification:', err)
@@ -67,7 +68,7 @@ export async function sendNoResponseEmail(
       from: FROM,
       to,
       subject: `No response from ${bureau} — escalation available`,
-      text: `Hi ${name},\n\nThe 30-day response window has expired for your dispute:\n\nAccount: ${accountName}\nBureau: ${bureau}\n\nYou can escalate this dispute (Round 2 letter + CFPB complaint) from your dashboard.\n\nView:\n${process.env.NEXT_PUBLIC_APP_URL}/disputes/${caseId}\n\n— Expunge`,
+      text: `Hi ${name},\n\nThe 30-day response window has expired for your dispute:\n\nAccount: ${accountName}\nBureau: ${bureau}\n\nYou can escalate this dispute (Round 2 letter + CFPB complaint) from your dashboard.\n\nView:\n${process.env.NEXT_PUBLIC_APP_URL}/disputes/${caseId}\n\n— ${BRAND.name}`,
     })
   } catch (err) {
     console.error('[Email] Failed to send no-response notification:', err)

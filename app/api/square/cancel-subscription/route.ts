@@ -21,9 +21,11 @@ export async function POST() {
 
     await squareClient.subscriptions.cancel(sub.square_subscription_id)
 
+    // Square stops renewal at the end of the paid period. Access stays until then;
+    // the subscription.updated webhook marks it canceled when the period ends.
     await service
       .from('subscriptions')
-      .update({ status: 'canceled', cancel_at_period_end: true, plan: 'free' })
+      .update({ cancel_at_period_end: true })
       .eq('user_id', user.id)
 
     return NextResponse.json({ success: true })

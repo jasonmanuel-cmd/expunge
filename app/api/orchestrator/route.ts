@@ -5,6 +5,7 @@ import { routeCases } from '@/lib/agents/case-router'
 import { runSpecialistAgent } from '@/lib/agents/specialists'
 import { generateLetter } from '@/lib/agents/letter-bot'
 import { sendLettersReadyEmail } from '@/lib/email'
+import { getUserPlan } from '@/lib/square/subscription'
 import type { Bureau } from '@/lib/types'
 
 // The full pipeline makes many sequential AI calls (orchestrator +
@@ -29,6 +30,9 @@ function checkRateLimit(userId: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  // Set once the case is confirmed to belong to the user, so a failure can
+  // mark it 'failed' instead of leaving it stuck on 'analyzing'.
+  let ownedCaseId: string | null = null
   try {
     const body = await req.json()
     const { caseId } = body
@@ -84,10 +88,23 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    ownedCaseId = caseId
     await supabase.from('cases').update({ status: 'analyzing' }).eq('id', caseId)
+
+    const plan = await getUserPlan(user.id)
 
     // Step 1: Master Orchestrator
     const orchestratorOutput = await runOrchestrator(caseData.credit_report_text)
+
+    // Plan limit: keep the highest-priority items up to the plan's per-case cap.
+    const foundItemCount = orchestratorOutput.items.length
+    if (foundItemCount > plan.maxItems) {
+      orchestratorOutput.items = [...orchestratorOutput.items]
+        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
+        .slice(0, plan.maxItems)
+    }
+    orchestratorOutput.totalDisputableItems = orchestratorOutput.items.length
+    const itemsOverLimit = foundItemCount - orchestratorOutput.items.length
     await supabase
       .from('cases')
       .update({ orchestrator_output: orchestratorOutput, status: 'routing' })
@@ -160,9 +177,12 @@ export async function POST(req: NextRequest) {
           .update({ specialist_output: specialistOutput, status: 'letter_drafted' })
           .eq('id', dbItem.id)
 
+        // Single-bureau plans get one letter per item; tri-bureau plans get all three.
         const bureaus: Bureau[] =
           item.bureau === 'all'
-            ? ['equifax', 'experian', 'transunion']
+            ? plan.triBureau
+              ? ['equifax', 'experian', 'transunion']
+              : ['equifax']
             : [item.bureau as Bureau]
 
         await Promise.all(
@@ -204,9 +224,21 @@ export async function POST(req: NextRequest) {
       ).catch(() => {})
     }
 
-    return NextResponse.json({ success: true, itemCount: orchestratorOutput.totalDisputableItems })
+    return NextResponse.json({
+      success: true,
+      itemCount: orchestratorOutput.totalDisputableItems,
+      itemsOverLimit,
+      plan: plan.plan,
+    })
   } catch (err) {
     console.error('Orchestrator error:', err)
+    if (ownedCaseId) {
+      await createServiceClient()
+        .from('cases')
+        .update({ status: 'failed' })
+        .eq('id', ownedCaseId)
+        .then(undefined, () => {})
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

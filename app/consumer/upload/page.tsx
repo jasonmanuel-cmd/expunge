@@ -99,23 +99,7 @@ export default function UploadPage() {
 
       setStatusMsg(`File uploaded! Extracted ${result.textLength} characters. Starting AI analysis...`)
 
-      // Run orchestrator
-      const orchRes = await fetch('/api/orchestrator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caseId: result.caseId, userId: user.id }),
-      })
-
-      if (!orchRes.ok) {
-        setError('Analysis failed. Please try again.')
-        setStep('upload')
-        setLoading(false)
-        return
-      }
-
-      const orchResult = await orchRes.json()
-      setStatusMsg(`Found ${orchResult.itemCount} disputable items. Generating letters...`)
-      setTimeout(() => router.push('/dashboard'), 1500)
+      await runAnalysis(result.caseId)
     } catch {
       setError('Upload failed. Please check your connection and try again.')
       setStep('upload')
@@ -137,42 +121,54 @@ export default function UploadPage() {
     setStatusMsg('Creating case...')
 
     try {
-      const { data: newCase, error: caseError } = await supabase
-        .from('cases')
-        .insert({ user_id: user.id, credit_report_text: reportText, status: 'analyzing' })
-        .select()
-        .single()
-
-      if (caseError || !newCase) {
-        setError('Failed to create case. Please try again.')
+      // Pasted text goes through the same server route as files, so plan limits
+      // and ownership are checked on the server.
+      const formData = new FormData()
+      formData.append('file', new File([reportText], 'pasted-report.txt', { type: 'text/plain' }))
+      const res = await fetch('/api/upload-report', { method: 'POST', body: formData })
+      const created = await res.json()
+      if (!res.ok || !created.caseId) {
+        setError(created.error || 'Failed to create case. Please try again.')
         setStep('upload')
         setLoading(false)
         return
       }
 
       setStatusMsg('Running AI analysis — this may take 1-2 minutes...')
-
-      const res = await fetch('/api/orchestrator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caseId: newCase.id, userId: user.id }),
-      })
-
-      if (!res.ok) {
-        setError('Analysis failed. Please try again.')
-        setStep('upload')
-        setLoading(false)
-        return
-      }
-
-      const result = await res.json()
-      setStatusMsg(`Found ${result.itemCount} disputable items. Generating letters...`)
-      setTimeout(() => router.push('/dashboard'), 1500)
+      await runAnalysis(created.caseId)
     } catch {
       setError('Analysis failed. Please try again.')
       setStep('upload')
       setLoading(false)
     }
+  }
+
+  async function runAnalysis(caseId: string) {
+    const orchRes = await fetch('/api/orchestrator', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caseId }),
+    })
+    const orchResult = await orchRes.json().catch(() => ({}))
+
+    if (!orchRes.ok) {
+      if (orchResult.code === 'PROFILE_INCOMPLETE' && orchResult.profile_completion_url) {
+        router.push(orchResult.profile_completion_url)
+        return
+      }
+      setError(orchResult.error || 'Analysis failed. Please try again.')
+      setStep('upload')
+      setLoading(false)
+      return
+    }
+
+    const over = orchResult.itemsOverLimit ?? 0
+    setStatusMsg(
+      over > 0
+        ? `Letters ready for ${orchResult.itemCount} items. ${over} more found; upgrade your plan to dispute them too.`
+        : `Letters ready for ${orchResult.itemCount} items.`
+    )
+    setTimeout(() => router.push('/dashboard'), over > 0 ? 4000 : 1500)
   }
 
   return (

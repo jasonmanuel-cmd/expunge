@@ -14,6 +14,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { dispatchRecordId, result, scoreImpactPoints, notes } = await req.json()
+    if (!['removed', 'modified', 'verified', 'no_response'].includes(result)) {
+      return NextResponse.json({ error: 'Invalid result' }, { status: 400 })
+    }
     const supabase = createServiceClient()
 
     const { data: dispatch } = await supabase
@@ -130,13 +133,11 @@ export async function POST(req: NextRequest) {
 // GET: Check for expired 30-day windows and mark as no_response
 export async function GET(request: NextRequest) {
   try {
-    // If CRON_SECRET is set, verify it (Vercel cron sends it automatically)
+    // Vercel cron sends CRON_SECRET as a Bearer token. Without it set, refuse:
+    // otherwise anyone could trigger emails to every customer.
     const cronSecret = process.env.CRON_SECRET
-    if (cronSecret) {
-      const authHeader = request.headers.get('authorization')
-      if (authHeader !== `Bearer ${cronSecret}`) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
+    if (!cronSecret || request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const supabase = createServiceClient()

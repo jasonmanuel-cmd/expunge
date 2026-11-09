@@ -25,8 +25,8 @@ export const PLANS = {
     priceLabel: '$0/mo',
     description: 'Try it out',
     features: [
-      '1 case',
-      'Up to 3 dispute items',
+      '1 credit report',
+      'Up to 3 items disputed',
       'Single bureau',
       'AI letter generation',
     ],
@@ -40,7 +40,7 @@ export const PLANS = {
     priceLabel: '$49.99/mo',
     description: 'For individuals starting their journey',
     features: [
-      '5 dispute letters/mo',
+      'Up to 5 reports, 15 items each',
       'All 3 bureaus',
       'AI analysis + agents',
       '30-day monitoring',
@@ -60,7 +60,6 @@ export const PLANS = {
       'All 3 bureaus',
       'Full AI agent suite',
       '30-day monitoring + escalation',
-      'Bulk upload',
       'Dedicated support',
     ],
     limit: { cases: 999, items: 999, triBureau: true, escalation: true },

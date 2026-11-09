@@ -334,10 +334,10 @@ export default function HomePage() {
               <div className="mb-6">
                 <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Free</div>
                 <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$0 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>forever</span></div>
-                <div className="text-sm" style={{ color: '#615d59' }}>Try Expunge with one dispute.</div>
+                <div className="text-sm" style={{ color: '#615d59' }}>Try Expunge with one report.</div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
-                {['1 dispute letter', 'Single bureau', 'Basic AI analysis', 'Email support'].map((f) => (
+                {['1 credit report', 'Up to 3 items disputed', 'Letters for 1 bureau', 'AI analysis', 'Email support'].map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
                     {CHECK}
                     <span>{f}</span>
@@ -357,7 +357,7 @@ export default function HomePage() {
                 <div className="text-sm" style={{ color: '#615d59' }}>Fix a few key items.</div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
-                {['Up to 5 negative items per month', 'For each item: explanation, impact, and how a credit pro would attack it', 'AI-generated dispute letters for all 3 bureaus', 'Step-by-step sending and follow-up instructions', '30-day tracking guidance', 'Priority support'].map((f) => (
+                {['Up to 5 credit reports, 15 items each', 'For each item: explanation, impact, and how a credit pro would attack it', 'AI-generated dispute letters for all 3 bureaus', 'Step-by-step sending and follow-up instructions', '30-day tracking guidance', 'Priority support'].map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
                     {CHECK}
                     <span>{f}</span>
@@ -380,7 +380,7 @@ export default function HomePage() {
                 <div className="text-sm" style={{ color: '#615d59' }}>Full report breakdown.</div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
-                {['Every negative item on your report, no limits', 'Full breakdown: type, age, impact, dispute potential, recommended options', 'AI-generated dispute letters for all 3 bureaus for every item', 'Complete instruction set: how to send, what to attach, when to follow up', 'Bulk upload and organized dashboard', 'Dedicated support for complex reports'].map((f) => (
+                {['Every negative item on your report, no limits', 'Full breakdown: type, age, impact, dispute potential, recommended options', 'AI-generated dispute letters for all 3 bureaus for every item', 'Complete instruction set: how to send, what to attach, when to follow up', 'Organized dashboard', 'Dedicated support for complex reports'].map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
                     {CHECK}
                     <span>{f}</span>

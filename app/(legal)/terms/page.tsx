@@ -1,3 +1,4 @@
+import { BRAND } from '@/lib/brand'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
 
@@ -57,7 +58,7 @@ export default function TermsPage() {
           },
           {
             title: '11. Contact',
-            body: 'For questions about these Terms, contact us at legal@expunge.ai.',
+            body: `For questions about these Terms, contact us at ${BRAND.legalEmail}.`,
           },
         ].map(({ title, body }) => (
           <div key={title} className="mb-8">

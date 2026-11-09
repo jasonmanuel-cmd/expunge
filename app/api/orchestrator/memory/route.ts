@@ -4,6 +4,10 @@ import { createServiceClient } from '@/lib/supabase/server'
 // GET /api/orchestrator/memory — inspect what the orchestrator has learned
 export async function GET(req: NextRequest) {
   try {
+    const adminSecret = process.env.ADMIN_SECRET
+    if (!adminSecret || req.headers.get('x-admin-secret') !== adminSecret) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const supabase = createServiceClient()
     const { searchParams } = new URL(req.url)
     const disputeType = searchParams.get('type')
