@@ -4,4 +4,4 @@
 alter table public.cases
   add column if not exists source_file text;
 
-comment on column public.source_file is 'Original filename of the uploaded credit report';
+comment on column public.cases.source_file is 'Original filename of the uploaded credit report';
