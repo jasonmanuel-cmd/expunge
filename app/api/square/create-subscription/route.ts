@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { squareClient, LOCATION_ID, PLAN_IDS, PlanKey } from '@/lib/square/client'
+import { squareClient, LOCATION_ID, PLAN_IDS } from '@/lib/square/client'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { isFirmBillingKey, seatsForBillingKey } from '@/lib/pricing'
+
+// Only firms can pay Expunge. Consumers (including firm-invited clients) can
+// never start a subscription: the role check below enforces it server-side.
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { planKey, sourceId, userId, email } = await req.json() as {
-      planKey: PlanKey; sourceId: string; userId: string; email: string
+      planKey: unknown; sourceId: string; userId: string; email: string
     }
 
     // Verify the userId matches the authenticated user
@@ -20,11 +24,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    if (!PLAN_IDS[planKey]) {
+    if (!isFirmBillingKey(planKey)) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
+    }
+    const planVariationId = PLAN_IDS[planKey]
+    if (!planVariationId) {
+      return NextResponse.json({ error: 'This plan is not available for card checkout yet.' }, { status: 400 })
     }
 
     const supabase = createServiceClient()
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single()
+    if (profile?.role !== 'partner' && profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Only firm accounts can subscribe.' }, { status: 403 })
+    }
 
     // Check if Square customer already exists for this user
     const { data: existingSub } = await supabase
@@ -40,7 +57,7 @@ export async function POST(req: NextRequest) {
       const custResult = await squareClient.customers.create({
         emailAddress: email,
         referenceId: userId,
-        note: 'Expunge user',
+        note: 'Expunge firm account',
       })
       customerId = custResult.customer?.id
       if (!customerId) throw new Error('Failed to create Square customer')
@@ -60,7 +77,7 @@ export async function POST(req: NextRequest) {
     const subResult = await squareClient.subscriptions.create({
       idempotencyKey: `sub-${userId}-${planKey}-${Date.now()}`,
       locationId: LOCATION_ID,
-      planVariationId: PLAN_IDS[planKey],
+      planVariationId,
       customerId,
       cardId,
       startDate: startDate.toISOString().split('T')[0],
@@ -81,18 +98,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Persist to Supabase
+    // Persist to Supabase. Monthly and annual both grant the one firm plan.
+    const annual = planKey === 'partner_annual'
     await supabase.from('subscriptions').upsert({
       user_id: userId,
-      plan: planKey,
+      plan: 'partner',
       status: 'active',
       square_customer_id: customerId,
       square_subscription_id: squareSubId,
       square_card_id: cardId,
       current_period_start: startDate.toISOString(),
-      current_period_end: new Date(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()).toISOString(),
+      current_period_end: (annual
+        ? new Date(startDate.getFullYear() + 1, startDate.getMonth(), startDate.getDate())
+        : new Date(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate())
+      ).toISOString(),
       cancel_at_period_end: false,
     }, { onConflict: 'user_id' })
+
+    // Save the plan's client seats. Kept as a separate write so checkout still
+    // works on a database where migration 010 (client_seats) hasn't run yet;
+    // such a firm gets the default seat count until it does.
+    const { error: seatsError } = await supabase
+      .from('subscriptions')
+      .update({ client_seats: seatsForBillingKey(planKey) })
+      .eq('user_id', userId)
+    if (seatsError) console.error('Could not save client seats for', userId, seatsError.message)
 
     return NextResponse.json({ success: true, plan: planKey })
   } catch (err) {

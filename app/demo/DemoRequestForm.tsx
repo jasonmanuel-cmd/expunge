@@ -7,15 +7,25 @@ import { useState } from 'react'
  * visitor's own email app with the details filled in, addressed to `to`.
  * Swap this for a stored lead (Supabase table + API route) when one exists.
  */
-export default function DemoRequestForm({ to }: { to: string }) {
+export default function DemoRequestForm({
+  to,
+  initialInterest = 'demo',
+}: {
+  to: string
+  initialInterest?: 'demo' | 'license' | 'seats'
+}) {
   const [opened, setOpened] = useState(false)
+  const isLicense = initialInterest === 'license'
+  const isSeats = initialInterest === 'seats'
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
     const get = (k: string) => String(f.get(k) ?? '').trim()
-    const subject = `Demo request: ${get('firm') || 'firm'}`
+    const kind = get('interest')
+    const subject = `${kind.startsWith('Demo') ? 'Demo request' : kind.startsWith('More client seats') ? 'Seat request' : 'License request'}: ${get('firm') || 'firm'}`
     const body = [
+      `Interested in: ${get('interest')}`,
       `Name: ${get('name')}`,
       `Firm: ${get('firm')}`,
       `Email: ${get('email')}`,
@@ -51,13 +61,26 @@ export default function DemoRequestForm({ to }: { to: string }) {
         Phone <span className="text-[#A39E98] font-normal">(optional)</span>
         <input name="phone" type="tel" autoComplete="tel" className={input} />
       </label>
+      <label className={`${label} sm:col-span-2`}>
+        Interested in
+        <select name="interest" className={input} defaultValue={isSeats ? 'More client seats' : isLicense ? 'Annual license (invoice)' : 'Demo'}>
+          <option>Demo</option>
+          <option>Monthly plan</option>
+          <option>More client seats</option>
+          <option>Annual license (invoice)</option>
+          <option>White-label (our own brand)</option>
+          <option>Outright purchase of the software</option>
+        </select>
+      </label>
       <label className={label}>
-        Firm type
+        Business type
         <select name="type" className={input} defaultValue="Tax preparation">
           <option>Tax preparation</option>
           <option>Bookkeeping or CPA</option>
           <option>Mortgage or lending</option>
           <option>Financial coaching</option>
+          <option>Credit services company</option>
+          <option>Software or fintech company</option>
           <option>Other</option>
         </select>
       </label>
@@ -79,7 +102,7 @@ export default function DemoRequestForm({ to }: { to: string }) {
           type="submit"
           className="w-full rounded-xl bg-[#F97316] hover:bg-[#EA580C] py-3.5 text-sm font-bold text-white transition-colors shadow-[0_8px_24px_rgba(249,115,22,0.3)]"
         >
-          Request a demo
+          {isSeats ? 'Request more seats' : isLicense ? 'Request license terms' : 'Request a demo'}
         </button>
         <p className="mt-3 text-xs text-[#8A847E]">
           {opened

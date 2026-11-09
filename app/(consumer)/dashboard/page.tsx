@@ -48,14 +48,13 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
 
   // Effective plan: a client invited by a firm with an active firm plan is
-  // covered at Pro level and never sees upgrade prompts.
+  // covered. Clients never pay Expunge, so there are no upgrade prompts.
   const [userPlan, firm] = await Promise.all([
     getUserPlan(user.id),
     getSponsoringFirm(user.id),
   ])
   const sponsored = userPlan.sponsored
-  const isFreeTier = !sponsored && userPlan.plan === 'free'
-  const isBasicTier = !sponsored && userPlan.plan === 'basic'
+  const notCovered = !userPlan.isActive
 
   const totalItems = cases?.flatMap((c) => c.dispute_items).length ?? 0
   const removedItems = cases?.flatMap((c) => c.dispute_items).filter((i) => i.status === 'removed').length ?? 0
@@ -69,7 +68,7 @@ export default async function DashboardPage() {
           <ExpungeLogo variant="primary" width={160} height={40} />
         </Link>
         <div className="flex items-center gap-4">
-          {!sponsored && <Link href="/billing" className="text-sm text-[#6B7280] hover:text-[#111827] transition">Billing</Link>}
+          {!sponsored && !notCovered && <Link href="/billing" className="text-sm text-[#6B7280] hover:text-[#111827] transition">Billing</Link>}
           <span className="text-[#6B7280] text-sm">{profile?.full_name || user.email}</span>
           <Link href="/upload" className="bg-[#F97316] hover:bg-[#EA580C] transition px-4 py-2.5 rounded-lg text-sm font-bold text-white">
             + New dispute
@@ -103,35 +102,23 @@ export default async function DashboardPage() {
               <div className="font-semibold text-[#111827]">Provided by {firm.firmName}</div>
               {sponsored ? (
                 <div className="text-[#6B7280]">Your Expunge access is covered by {firm.firmName}.</div>
-              ) : isFreeTier ? (
-                <div className="text-[#6B7280]">{firm.firmName}&apos;s plan isn&apos;t active right now, so you&apos;re on the free tier.</div>
+              ) : notCovered && firm.active && !firm.seated ? (
+                <div className="text-[#6B7280]">{firm.firmName} has used all of its client seats, so new reviews are paused for your account. Your past letters are still here. Ask {firm.firmName} to free up a seat or add more.</div>
+              ) : notCovered ? (
+                <div className="text-[#6B7280]">{firm.firmName}&apos;s plan isn&apos;t active right now, so new reviews are paused. Your past letters are still here.</div>
               ) : null}
             </div>
           </div>
         )}
 
-        {/* Upgrade banner */}
-        {isFreeTier && (
-          <div className="mb-10 bg-gradient-to-r from-[#F97316] to-[#EA580C] rounded-2xl p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-orange-200">
-            <div>
-              <div className="font-bold text-lg">Unlock the full power of Expunge</div>
-              <div className="text-white/80 text-sm mt-0.5">Upgrade to Pro for unlimited disputes, tri-bureau dispatch, escalation bot, and priority support.</div>
+        {/* No firm behind this account */}
+        {notCovered && !firm && (
+          <div className="mb-10 bg-[#FFF7ED] border border-[#FED7AA] rounded-2xl p-5 text-sm text-[#374151]">
+            <div className="font-semibold text-[#111827]">Your account isn&apos;t linked to a firm</div>
+            <div className="mt-0.5">
+              Expunge is provided through tax and finance firms. If your firm uses Expunge, open the invite link they sent you while signed in.
+              You can also dispute errors with the credit bureaus yourself, for free.
             </div>
-            <Link href="/checkout?plan=pro" className="bg-white text-[#F97316] hover:bg-orange-50 transition font-bold px-6 py-3 rounded-xl text-sm whitespace-nowrap shadow-md">
-              Upgrade to Pro →
-            </Link>
-          </div>
-        )}
-
-        {isBasicTier && (
-          <div className="mb-10 bg-[#FFF7ED] border border-[#FED7AA] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <div className="font-semibold text-[#111827]">Ready for the full playbook?</div>
-              <div className="text-[#6B7280] text-sm mt-0.5">Upgrade to Pro for unlimited disputes, escalation bot, bulk upload, and dedicated support.</div>
-            </div>
-            <Link href="/checkout?plan=pro" className="bg-[#F97316] hover:bg-[#EA580C] transition font-bold px-6 py-3 rounded-xl text-sm whitespace-nowrap text-white shadow-md">
-              Upgrade to Pro → $99/mo
-            </Link>
           </div>
         )}
 

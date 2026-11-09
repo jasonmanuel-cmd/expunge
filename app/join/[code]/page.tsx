@@ -2,7 +2,7 @@ import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeInviteCode } from '@/lib/partner/firm'
-import { getFirmByInviteCode } from '@/lib/partner/server'
+import { getFirmByInviteCode, getFirmSeats } from '@/lib/partner/server'
 import JoinButton from './JoinButton'
 
 export const dynamic = 'force-dynamic'
@@ -14,6 +14,18 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  // A client already linked to this firm keeps their seat; anyone else needs
+  // an open one.
+  const { data: ownLink } = firm && user
+    ? await supabase
+        .from('partner_clients')
+        .select('partner_id')
+        .eq('consumer_id', user.id)
+        .eq('partner_id', firm.partnerId)
+        .maybeSingle()
+    : { data: null }
+  const seats = firm && !ownLink ? await getFirmSeats(firm.partnerId) : null
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] text-[#111827] flex items-center justify-center px-4 py-8">
@@ -30,6 +42,15 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
               <h1 className="text-2xl font-bold mb-3">This invite link isn&apos;t valid</h1>
               <p className="text-[#6B7280] text-sm mb-6">
                 Ask the firm that sent it for a new link.
+              </p>
+              <Link href="/" className="text-[#F97316] font-medium">Go to the home page</Link>
+            </>
+          ) : seats?.full ? (
+            <>
+              <h1 className="text-2xl font-bold mb-3">{firm.firmName} is full right now</h1>
+              <p className="text-[#6B7280] text-sm mb-6">
+                {firm.firmName} has used all of its client seats on Expunge. Ask them to free one up or
+                add more, then open this link again.
               </p>
               <Link href="/" className="text-[#F97316] font-medium">Go to the home page</Link>
             </>

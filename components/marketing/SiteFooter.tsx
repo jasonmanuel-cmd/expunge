@@ -6,7 +6,7 @@ const COLUMNS = [
     title: 'For firms',
     links: [
       { href: '/#platform', label: 'Platform' },
-      { href: '/#pricing', label: 'Firm pricing' },
+      { href: '/pricing', label: 'Firm pricing' },
       { href: '/for-tax-pros', label: 'For tax preparers' },
       { href: '/demo', label: 'Book a demo' },
     ],
@@ -14,9 +14,7 @@ const COLUMNS = [
   {
     title: 'For individuals',
     links: [
-      { href: '/personal', label: 'How it works' },
-      { href: '/personal#pricing', label: 'Personal plans' },
-      { href: '/register', label: 'Start free' },
+      { href: '/personal', label: 'Getting access' },
     ],
   },
   {
@@ -36,7 +34,7 @@ export default function SiteFooter() {
         <div className="col-span-2 md:col-span-1">
           <ExpungeLogo variant="primary" width={130} height={32} />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#8A847E]">
-            Credit report review and dispute letter software for tax and finance firms and the clients they serve.
+            Credit report review and dispute letter software, sold to tax and finance firms for use with their clients.
           </p>
         </div>
         {COLUMNS.map((c) => (
@@ -51,7 +49,7 @@ export default function SiteFooter() {
         ))}
       </div>
       <p className="mx-auto mt-12 max-w-6xl border-t border-black/[0.06] pt-6 text-xs leading-relaxed text-[#A39E98]">
-        Expunge is software, not a law firm, and does not provide legal advice. Expunge does not remove items from credit reports and does not contact credit bureaus or creditors for anyone. Users review and mail their own dispute letters. Anyone can dispute inaccurate information with the credit bureaus directly, for free. Results vary.
+        Expunge is business software sold only to firms. It does not sell to or take payment from consumers and does not provide credit repair services. Expunge is not a law firm and does not provide legal advice. Expunge does not remove items from credit reports and does not contact credit bureaus or creditors for anyone. Users review and mail their own dispute letters. Anyone can dispute inaccurate information with the credit bureaus directly, for free. Results vary.
       </p>
     </footer>
   )

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Icon, Check, ICONS } from '@/components/marketing/icons'
+import { Icon, ICONS } from '@/components/marketing/icons'
 import SiteNav from '@/components/marketing/SiteNav'
 import SiteFooter from '@/components/marketing/SiteFooter'
-import { PLANS } from '@/lib/square/client'
+import FirmPricing from '@/components/marketing/FirmPricing'
+import { FIRM_MONTHLY, FIRM_ANNUAL } from '@/lib/pricing'
 
 /*
  * Firm-first (B2B) homepage. Copy rules, keep them when editing:
@@ -11,6 +12,7 @@ import { PLANS } from '@/lib/square/client'
  * - Never promise score increases, point gains, timelines or "results".
  * - Clients review and mail their own letters. Nobody "disputes for" them.
  * - No testimonials, client counts, revenue claims or result stats until an attorney approves them.
+ * - Expunge is sold only to businesses. No consumer plans, prices or checkout anywhere.
  * - Don't pitch credit help as a new revenue line: a firm that charges clients for it may be a
  *   regulated credit services organization. Keep the attorney notice on the page.
  */
@@ -18,7 +20,7 @@ import { PLANS } from '@/lib/square/client'
 export const metadata: Metadata = {
   title: 'Expunge | Credit report review software for tax and finance firms',
   description:
-    'White-label software that lets tax preparers and financial firms give clients a credit report review and dispute letters they mail themselves. One flat monthly price for every client you invite.',
+    'Business software for tax preparers and financial firms: a branded credit report review and dispute letters clients mail themselves. Licensed to firms monthly or by flat annual fee.',
 }
 
 const DEMO = '/demo'
@@ -72,7 +74,7 @@ const FAQ = [
   },
   {
     q: 'What does it cost my clients?',
-    a: `Nothing from Expunge. Your firm pays one flat ${PLANS.partner.priceLabel} and every client you invite gets full Pro access. Clients never see a bill from Expunge.`,
+    a: `Nothing from Expunge. Expunge is licensed to your firm for ${FIRM_MONTHLY.priceLabel} or ${FIRM_ANNUAL.priceLabel}, and every client you invite is covered by your plan. Expunge never bills or takes payment from consumers.`,
   },
   {
     q: 'Can my firm charge clients for this?',
@@ -83,8 +85,16 @@ const FAQ = [
     a: 'No. Only the credit bureaus and the companies that report to them decide what stays on a report. Results vary, and accurate, current information can stay.',
   },
   {
-    q: 'Is there a contract?',
-    a: 'No. The firm plan is billed monthly and you can cancel any time.',
+    q: 'How many clients can I invite?',
+    a: `Firm Monthly includes ${FIRM_MONTHLY.clientSeats} active client seats and the Annual License includes ${FIRM_ANNUAL.clientSeats}. Each client who joins takes a seat. Remove a client you no longer serve to free their seat, or ask us for more.`,
+  },
+  {
+    q: 'How is it licensed?',
+    a: 'Monthly with no contract, or one flat annual license paid by card or invoice. Networks and companies that want it under their own brand, or want to own a copy outright, can request a quote.',
+  },
+  {
+    q: 'Can individuals buy Expunge?',
+    a: 'No. Expunge is business software sold only to firms. Individuals get access through a firm that invites them, and anyone can dispute errors with the credit bureaus directly, for free.',
   },
 ]
 
@@ -123,7 +133,7 @@ export default function HomePage() {
               </h1>
 
               <p className="mt-6 text-lg sm:text-xl leading-relaxed text-white/65 max-w-xl">
-                Your clients upload their report, see which items may be inaccurate, and get dispute letters they mail themselves. You get a branded portal and a dashboard for every client, for one flat monthly price.
+                Your clients upload their report, see which items may be inaccurate, and get dispute letters they mail themselves. You get a branded portal and a dashboard for every client, licensed to your firm for a flat monthly or annual fee.
               </p>
 
               <div className="mt-10 flex flex-col sm:flex-row gap-3">
@@ -141,7 +151,7 @@ export default function HomePage() {
                   Start your firm plan
                 </Link>
               </div>
-              <p className="mt-4 text-sm text-white/45">{PLANS.partner.priceLabel} · every invited client included · cancel any time</p>
+              <p className="mt-4 text-sm text-white/45">{FIRM_MONTHLY.priceLabel} or {FIRM_ANNUAL.priceLabel} · every invited client included · sold to businesses only</p>
             </div>
 
             {/* Firm dashboard mock */}
@@ -210,7 +220,7 @@ export default function HomePage() {
           <div className="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
             {[
               { icon: ICONS.palette, top: 'Your brand', sub: 'Name and logo on client pages' },
-              { icon: ICONS.users, top: 'Every client included', sub: 'No per-client billing' },
+              { icon: ICONS.users, top: `Up to ${FIRM_ANNUAL.clientSeats} clients`, sub: 'No per-client billing' },
               { icon: ICONS.clock, top: 'No new staff', sub: 'Software does the drafting' },
               { icon: ICONS.shield, top: 'Clients mail it', sub: 'Nobody files for them' },
             ].map((t) => (
@@ -306,8 +316,8 @@ export default function HomePage() {
             <p className="mt-5 text-lg leading-relaxed text-white/65">
               Expunge flags what may be wrong and says so plainly when an item looks accurate. Clients learn they can dispute errors with the bureaus for free, and get letters that make it easier.
             </p>
-            <Link href="/personal" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#FB923C] hover:text-[#FDBA74] transition-colors">
-              See the client experience
+            <Link href={DEMO} className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#FB923C] hover:text-[#FDBA74] transition-colors">
+              See the client experience in a demo
               <Icon d={ICONS.arrow} className="w-4 h-4" />
             </Link>
           </div>
@@ -341,63 +351,16 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto">
             <Eyebrow>Pricing</Eyebrow>
-            <h2 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-0.03em]">One flat price for your whole client list</h2>
-            <p className="mt-4 text-lg text-[#615D59]">No per-client fees. No contract.</p>
+            <h2 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-0.03em]">License it monthly or for a flat yearly fee</h2>
+            <p className="mt-4 text-lg text-[#615D59]">No per-client fees. Each plan includes a set number of client seats.</p>
           </div>
 
-          <div className="mt-16 grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-5 max-w-4xl mx-auto">
-            <div className="relative flex flex-col rounded-3xl bg-[#0B1426] p-8 text-white ring-2 ring-[#F97316] shadow-[0_24px_60px_rgba(249,115,22,0.18)]">
-              <div className="absolute -top-3 left-8 rounded-full bg-[#F97316] px-3.5 py-1 text-[11px] font-bold tracking-wider">FIRM PLAN</div>
-              <div className="text-sm font-medium text-white/60">{PLANS.partner.name}</div>
-              <div className="mt-1 flex items-baseline gap-1">
-                <span className="text-5xl font-bold tracking-tight">{PLANS.partner.priceLabel.replace('/mo', '')}</span>
-                <span className="text-base text-white/50">/mo</span>
-              </div>
-              <div className="mt-1 text-sm text-white/70">For tax and finance firms of any size.</div>
-              <ul className="mt-7 mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                  'Full Pro access for every client you invite',
-                  'Your firm name and logo on client pages',
-                  'One private invite link',
-                  'Dashboard with every client and their disputes',
-                  'Report review and letter drafting',
-                  'Follow-up tracking and reminders',
-                  'One flat monthly price',
-                  'Cancel any time',
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-white/85">
-                    <Check />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-auto flex flex-col sm:flex-row gap-3">
-                <Link href={FIRM_SIGNUP} className="flex-1 rounded-xl bg-[#F97316] hover:bg-[#EA580C] py-3.5 text-center text-sm font-bold transition-colors shadow-[0_0_30px_rgba(249,115,22,0.4)]">
-                  Start your firm plan
-                </Link>
-                <Link href={DEMO} className="flex-1 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 py-3.5 text-center text-sm font-bold transition-colors">
-                  Book a demo first
-                </Link>
-              </div>
-            </div>
-
-            <div className="flex flex-col rounded-3xl border border-dashed border-black/20 bg-white p-8">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF7ED] text-[#F97316]">
-                <Icon d={ICONS.building} className="w-5 h-5" />
-              </div>
-              <h3 className="mt-5 text-xl font-bold">Multiple offices or a large client list?</h3>
-              <p className="mt-2 text-[#615D59] leading-relaxed">
-                Tell us how many offices and clients you serve and we&apos;ll walk you through setup on a call.
-              </p>
-              <Link href={DEMO} className="mt-auto pt-8 inline-flex items-center gap-2 text-sm font-bold text-[#EA580C] hover:text-[#C2410C] transition-colors">
-                Talk to us
-                <Icon d={ICONS.arrow} className="w-4 h-4" />
-              </Link>
-            </div>
+          <div className="mt-16">
+            <FirmPricing />
           </div>
 
           <p className="mt-8 text-center text-sm text-[#8A847E]">
-            Using it for yourself? <Link href="/personal#pricing" className="font-semibold text-[#615D59] underline underline-offset-2 hover:text-[#0D1B2E]">See personal plans</Link>, including a free plan.
+            Expunge is sold to businesses only. There are no consumer plans and clients never pay Expunge.
           </p>
         </div>
       </section>
@@ -412,7 +375,7 @@ export default function HomePage() {
             <div className="text-sm leading-relaxed text-[#374151]">
               <div className="text-base font-semibold text-[#0D1B2E]">Before you offer credit services</div>
               <p className="mt-2">
-                When your firm offers credit dispute help to clients, your firm may be the credit services provider. The federal Credit Repair Organizations Act and many state laws can apply, including rules against charging clients before the work is done and, in some states, registration or a bond. Expunge is software and does not give legal advice. Talk to an attorney about the rules in your state before you offer this to clients.
+                When your firm offers credit dispute help to clients, your firm may be the credit services provider. The federal Credit Repair Organizations Act and many state laws can apply, including rules against charging clients before the work is done and, in some states, registration or a bond. Expunge sells software to your firm, does not provide credit repair or any credit services to consumers, and does not give legal advice. Your firm is responsible for its own compliance. Talk to an attorney about the rules in your state before you offer this to clients.
               </p>
             </div>
           </div>

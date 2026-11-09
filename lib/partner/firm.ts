@@ -1,4 +1,5 @@
 // Pure helpers for firm (partner) accounts. No I/O here so they can be unit tested.
+import { DEFAULT_CLIENT_SEATS } from '@/lib/pricing'
 import { randomBytes } from 'crypto'
 
 const INVITE_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789' // no 0/o/1/l/i
@@ -46,14 +47,32 @@ export function normalizeLogoUrl(raw: unknown): string | null {
 
 export type OwnPlan = 'free' | 'basic' | 'pro' | 'partner'
 
-/** True when a subscription row gives the firm an active Partner plan. */
-export function isFirmPlanActive(plan: string | null | undefined, status: string | null | undefined): boolean {
-  return plan === 'partner' && (status === 'active' || status === 'trialing')
+/**
+ * True when a subscription row gives the firm an active firm plan.
+ *
+ * A firm can pay by Square subscription (monthly or yearly) or by invoice. An
+ * invoiced license has no Square subscription, so nothing would ever mark it
+ * expired; it is active only until its current_period_end. Rows paid through
+ * Square are kept current by the webhook, so their period end is not checked.
+ */
+export function isFirmPlanActive(
+  plan: string | null | undefined,
+  status: string | null | undefined,
+  license?: { periodEnd?: string | null; squareSubscriptionId?: string | null; now?: Date },
+): boolean {
+  if (plan !== 'partner' || (status !== 'active' && status !== 'trialing')) return false
+  if (license && !license.squareSubscriptionId && license.periodEnd) {
+    const end = new Date(license.periodEnd)
+    if (!Number.isNaN(end.getTime()) && end.getTime() < (license.now ?? new Date()).getTime()) return false
+  }
+  return true
 }
 
 /**
- * The plan a client actually gets. A client's own paid plan wins; otherwise a
- * client whose firm has an active Partner plan gets Pro features, paid by the firm.
+ * The plan a client actually gets. Clients never pay Expunge: a client whose
+ * firm has an active firm plan gets full features, paid by the firm. A paid
+ * plan of their own only exists on accounts from before the firms-only change
+ * (retired Basic/Pro) and is honored until it ends.
  */
 export function resolveEffectivePlan(input: {
   ownPlan: OwnPlan
@@ -64,4 +83,47 @@ export function resolveEffectivePlan(input: {
   if (own !== 'free') return { plan: own, sponsored: false }
   if (input.firmActive) return { plan: 'pro', sponsored: true }
   return { plan: 'free', sponsored: false }
+}
+
+/**
+ * A firm's client seat limit: the count saved on its subscription row when
+ * there is one (set at checkout, or raised when a firm buys more seats),
+ * otherwise the Firm Monthly default.
+ */
+export function resolveSeatLimit(saved: unknown): number {
+  const n = typeof saved === 'string' ? Number(saved) : saved
+  return typeof n === 'number' && Number.isInteger(n) && n > 0 ? n : DEFAULT_CLIENT_SEATS
+}
+
+export interface SeatUsage {
+  used: number
+  limit: number
+  /** Seats still open (never below zero). */
+  open: number
+  /** True when no new client can join. */
+  full: boolean
+  /** Linked clients beyond the limit, who can't start new reviews. */
+  over: number
+}
+
+export function seatUsage(used: number, limit: number): SeatUsage {
+  const u = Math.max(0, Math.floor(used))
+  return {
+    used: u,
+    limit,
+    open: Math.max(0, limit - u),
+    full: u >= limit,
+    over: Math.max(0, u - limit),
+  }
+}
+
+/**
+ * Whether a client holds one of the firm's seats. Clients are seated in the
+ * order they joined: position 1 is the firm's earliest linked client. If a
+ * firm has more linked clients than seats (it moved to a smaller plan, or a
+ * client got in around the join check), the latest joiners lose coverage for
+ * new reviews until seats free up.
+ */
+export function holdsSeat(position: number, limit: number): boolean {
+  return position >= 1 && position <= limit
 }

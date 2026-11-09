@@ -4,7 +4,7 @@ import ExpungeLogo from '@/components/ExpungeLogo'
 const LINKS = [
   { href: '/#platform', label: 'Platform' },
   { href: '/#how-it-works', label: 'How it works' },
-  { href: '/#pricing', label: 'Pricing' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/for-tax-pros', label: 'For tax pros' },
   { href: '/personal', label: 'For individuals' },
 ]

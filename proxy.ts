@@ -59,11 +59,11 @@ export async function proxy(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (user && AUTH_PATHS.some((p) => pathname.startsWith(p))) {
-    // Honor upgrade intent: a logged-in user who clicked a paid-plan CTA
-    // (e.g. /register?plan=pro) should go straight to checkout, not be
-    // bounced to the dashboard and lose the plan they selected.
+    // Honor firm-plan intent: a logged-in user who clicked a firm-plan CTA
+    // (e.g. /register?plan=partner) goes to checkout, which only lets firm
+    // accounts through. There are no consumer plans.
     const plan = request.nextUrl.searchParams.get('plan')
-    if (plan && ['basic', 'pro', 'partner'].includes(plan)) {
+    if (plan && ['partner', 'partner_annual'].includes(plan)) {
       return NextResponse.redirect(new URL(`/checkout?plan=${plan}`, request.url))
     }
     return NextResponse.redirect(new URL('/dashboard', request.url))

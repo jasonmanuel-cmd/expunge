@@ -6,7 +6,11 @@ import {
   normalizeLogoUrl,
   isFirmPlanActive,
   resolveEffectivePlan,
+  resolveSeatLimit,
+  seatUsage,
+  holdsSeat,
 } from '@/lib/partner/firm'
+import { DEFAULT_CLIENT_SEATS } from '@/lib/pricing'
 
 describe('generateInviteCode', () => {
   it('makes a valid, unique code', () => {
@@ -65,6 +69,18 @@ describe('isFirmPlanActive', () => {
     expect(isFirmPlanActive('pro', 'active')).toBe(false)
     expect(isFirmPlanActive(undefined, undefined)).toBe(false)
   })
+
+  it('expires an invoiced license on its period end', () => {
+    const now = new Date('2026-11-09T00:00:00Z')
+    expect(isFirmPlanActive('partner', 'active', { periodEnd: '2027-11-09T00:00:00Z', squareSubscriptionId: null, now })).toBe(true)
+    expect(isFirmPlanActive('partner', 'active', { periodEnd: '2026-11-01T00:00:00Z', squareSubscriptionId: null, now })).toBe(false)
+  })
+
+  it('leaves Square-billed plans to the webhook, whatever the period end says', () => {
+    const now = new Date('2026-11-09T00:00:00Z')
+    expect(isFirmPlanActive('partner', 'active', { periodEnd: '2026-11-01T00:00:00Z', squareSubscriptionId: 'sq_123', now })).toBe(true)
+    expect(isFirmPlanActive('partner', 'active', { periodEnd: null, squareSubscriptionId: null, now })).toBe(true)
+  })
 })
 
 describe('resolveEffectivePlan', () => {
@@ -83,5 +99,28 @@ describe('resolveEffectivePlan', () => {
   it('falls back to free when the firm is not active', () => {
     expect(resolveEffectivePlan({ ownPlan: 'free', ownActive: true, firmActive: false }))
       .toEqual({ plan: 'free', sponsored: false })
+  })
+})
+
+describe('client seats', () => {
+  it('uses the saved seat count, else the default', () => {
+    expect(resolveSeatLimit(150)).toBe(150)
+    expect(resolveSeatLimit('75')).toBe(75)
+    for (const bad of [null, undefined, 0, -5, 2.5, 'lots', NaN]) {
+      expect(resolveSeatLimit(bad)).toBe(DEFAULT_CLIENT_SEATS)
+    }
+  })
+
+  it('counts used, open and over seats', () => {
+    expect(seatUsage(10, 50)).toEqual({ used: 10, limit: 50, open: 40, full: false, over: 0 })
+    expect(seatUsage(50, 50)).toEqual({ used: 50, limit: 50, open: 0, full: true, over: 0 })
+    expect(seatUsage(53, 50)).toEqual({ used: 53, limit: 50, open: 0, full: true, over: 3 })
+  })
+
+  it('seats clients in join order', () => {
+    expect(holdsSeat(1, 50)).toBe(true)
+    expect(holdsSeat(50, 50)).toBe(true)
+    expect(holdsSeat(51, 50)).toBe(false)
+    expect(holdsSeat(0, 50)).toBe(false)
   })
 })

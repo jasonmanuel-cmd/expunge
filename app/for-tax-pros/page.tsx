@@ -2,19 +2,20 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import SiteNav from '@/components/marketing/SiteNav'
 import SiteFooter from '@/components/marketing/SiteFooter'
-import { Icon, Check, ICONS } from '@/components/marketing/icons'
-import { PLANS } from '@/lib/square/client'
+import { Icon, ICONS } from '@/components/marketing/icons'
+import FirmPricing from '@/components/marketing/FirmPricing'
+import { FIRM_MONTHLY, FIRM_ANNUAL } from '@/lib/pricing'
 
 export const metadata: Metadata = {
   title: 'Expunge for Tax Firms | Credit dispute help under your firm name',
   description:
-    'Give your tax clients a credit report review and dispute letters under your own firm name. One monthly price covers every client you invite.',
+    'Business software for tax firms: give clients a credit report review and dispute letters under your own firm name. Licensed monthly or by flat annual fee.',
 }
 
 const SIGNUP = '/register?plan=partner&role=partner'
 
 const STEPS = [
-  { icon: ICONS.palette, title: 'Set up your firm', body: 'Create a firm account, add your firm name and logo, and start the monthly plan.' },
+  { icon: ICONS.palette, title: 'Set up your firm', body: 'Create a firm account, add your firm name and logo, and choose monthly or the annual license.' },
   { icon: ICONS.link, title: 'Send your invite link', body: 'Share one link with clients by email or text, or at the end of a tax appointment.' },
   { icon: ICONS.search, title: 'Clients upload their report', body: 'Expunge reads their credit report, flags possible errors and drafts dispute letters they mail themselves.' },
   { icon: ICONS.chart, title: 'Track every client', body: 'Your dashboard shows each client, which items they disputed and what the bureaus said back.' },
@@ -23,7 +24,7 @@ const STEPS = [
 const WHY = [
   { icon: ICONS.calendar, title: 'A reason to stay in touch', body: 'Clients think about credit year round. This gives you a helpful reason to stay in touch after April.' },
   { icon: ICONS.palette, title: 'Your brand, not ours', body: 'Clients see your firm name and logo when they join and every time they open their dashboard.' },
-  { icon: ICONS.users, title: 'No per-client billing', body: 'One flat monthly price. Invite as many clients as you serve; they never see a bill from Expunge.' },
+  { icon: ICONS.users, title: 'No per-client billing', body: `One flat monthly or annual fee with up to ${FIRM_MONTHLY.clientSeats} or ${FIRM_ANNUAL.clientSeats} client seats. Expunge never bills your clients.` },
   { icon: ICONS.clock, title: 'No new staff', body: 'The software does the report review and letter drafting. Your team answers questions and stays the trusted advisor.' },
 ]
 
@@ -55,7 +56,7 @@ export default function ForTaxProsPage() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3">
             <Link href={SIGNUP} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F97316] hover:bg-[#EA580C] transition-colors px-7 py-4 text-base sm:text-lg font-bold text-white shadow-[0_0_40px_rgba(249,115,22,0.45)]">
-              Start your firm plan, {PLANS.partner.priceLabel}
+              Start your firm plan, {FIRM_MONTHLY.priceLabel}
             </Link>
             <Link href="/demo" className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 transition-colors px-7 py-4 text-base sm:text-lg font-semibold text-white">
               Book a demo
@@ -119,21 +120,10 @@ export default function ForTaxProsPage() {
       </section>
 
       <section className="py-24 bg-white">
-        <div className="mx-auto max-w-xl px-4 sm:px-6">
-          <div className="relative rounded-3xl bg-[#0B1426] p-8 text-center text-white ring-2 ring-[#F97316] shadow-[0_24px_60px_rgba(249,115,22,0.18)]">
-            <div className="text-sm font-semibold text-[#FB923C]">Firm plan</div>
-            <div className="mt-1 text-5xl font-bold tracking-tight">{PLANS.partner.priceLabel}</div>
-            <div className="mt-1 text-sm text-white/60">Cancel any time</div>
-            <ul className="mt-7 mb-8 space-y-2.5 text-left text-sm">
-              {['Every invited client gets full Pro access', 'Your firm name and logo on client pages', 'One invite link for all your clients', 'Dashboard with each client’s progress'].map((f) => (
-                <li key={f} className="flex items-start gap-2 text-white/85"><Check /><span>{f}</span></li>
-              ))}
-            </ul>
-            <Link href={SIGNUP} className="block rounded-xl bg-[#F97316] hover:bg-[#EA580C] py-3.5 font-bold transition-colors">
-              Start your firm plan
-            </Link>
-            <Link href="/demo" className="mt-3 block text-sm font-semibold text-white/70 hover:text-white">Or book a demo first</Link>
-          </div>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <h2 className="text-center text-3xl sm:text-4xl font-bold tracking-[-0.03em] text-[#0D1B2E]">Firm licensing</h2>
+          <p className="mt-3 mb-12 text-center text-[#615D59]">Sold to businesses only. Your clients never pay Expunge.</p>
+          <FirmPricing />
         </div>
       </section>
 
@@ -149,8 +139,9 @@ export default function ForTaxProsPage() {
                 When you offer credit dispute help to your clients, your firm is the credit services provider.
                 Federal law (the Credit Repair Organizations Act) and many state laws apply, including rules
                 against charging clients before the work is done and, in some states, registration or a bond.
-                Expunge is software and does not give legal advice. Talk to an attorney about the rules in your
-                state before you offer this to clients.
+                Expunge sells software to your firm, does not provide credit services to consumers and does not
+                give legal advice. Your firm is responsible for its own compliance. Talk to an attorney about the
+                rules in your state before you offer this to clients.
               </p>
             </div>
           </div>

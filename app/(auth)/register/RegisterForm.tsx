@@ -17,7 +17,8 @@ export default function RegisterForm({ inviteCode, inviteFirm, initialRole }: Pr
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<'consumer' | 'partner'>(initialRole)
+  // Clients only sign up through a firm's invite; everyone else creates a firm account.
+  const role: 'consumer' | 'partner' = inviteCode ? 'consumer' : initialRole
   const [addressLine1, setAddressLine1] = useState('')
   const [addressLine2, setAddressLine2] = useState('')
   const [city, setCity] = useState('')
@@ -35,14 +36,14 @@ export default function RegisterForm({ inviteCode, inviteFirm, initialRole }: Pr
     setLoading(true)
     setError('')
 
-    // If the user arrived from a paid plan CTA (/register?plan=pro), continue to
-    // checkout after signup instead of dropping them on the dashboard.
-    // Invited clients are covered by their firm, so they never go to checkout.
-    const planParam = inviteCode ? null : new URLSearchParams(window.location.search).get('plan')
-    const isPaidPlan = planParam === 'basic' || planParam === 'pro' || planParam === 'partner'
-    const next = isPaidPlan
+    // A firm that arrived from a plan CTA (/register?plan=partner) continues to
+    // checkout after signup. Invited clients are covered by their firm and
+    // never see checkout; there are no consumer plans.
+    const planParam = isFirm ? new URLSearchParams(window.location.search).get('plan') : null
+    const isFirmPlan = planParam === 'partner' || planParam === 'partner_annual'
+    const next = isFirmPlan
       ? `/checkout?plan=${planParam}`
-      : role === 'partner'
+      : isFirm
         ? '/partner/dashboard'
         : '/dashboard'
     const supabase = createClient()
@@ -153,7 +154,9 @@ export default function RegisterForm({ inviteCode, inviteFirm, initialRole }: Pr
             {isFirm ? 'Create your firm account' : 'Create account'}
           </h1>
           <p className="text-[#6B7280] text-sm mb-6">
-            {isFirm ? 'Offer credit dispute help to your clients under your firm name' : 'Start automating your credit disputes'}
+            {isFirm
+              ? 'Business accounts for tax, finance and lending firms. Your clients join free from your invite link.'
+              : 'Review your credit report and prepare dispute letters you mail yourself'}
           </p>
 
           {error && (
@@ -163,24 +166,6 @@ export default function RegisterForm({ inviteCode, inviteFirm, initialRole }: Pr
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!inviteCode && (
-            <div className="grid grid-cols-2 gap-2">
-              {(['consumer', 'partner'] as const).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRole(r)}
-                  className={`py-2.5 rounded-lg text-sm font-medium border transition ${
-                    role === r
-                      ? 'bg-[#F97316] border-[#F97316] text-white'
-                      : 'bg-white border-[#D1D5DB] text-[#6B7280] hover:text-[#111827]'
-                  }`}
-                >
-                  {r === 'consumer' ? 'Consumer' : 'Tax / Financial firm'}
-                </button>
-              ))}
-            </div>
-            )}
 
             <div>
               <label className="block text-sm text-[#374151] mb-1.5">{isFirm ? 'Your name' : 'Full name'}</label>
@@ -194,7 +179,7 @@ export default function RegisterForm({ inviteCode, inviteFirm, initialRole }: Pr
               />
             </div>
             <div>
-              <label className="block text-sm text-[#374151] mb-1.5">Email</label>
+              <label className="block text-sm text-[#374151] mb-1.5">{isFirm ? 'Work email' : 'Email'}</label>
               <input
                 type="email"
                 value={email}
@@ -323,6 +308,13 @@ export default function RegisterForm({ inviteCode, inviteFirm, initialRole }: Pr
               {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
+
+          {isFirm && (
+            <p className="text-center text-[#6B7280] text-xs mt-6">
+              Not a business? Expunge is provided through firms. If your tax preparer or advisor uses
+              Expunge, sign up with the invite link they sent you.
+            </p>
+          )}
 
           <p className="text-center text-[#6B7280] text-sm mt-6">
             Already have an account?{' '}
