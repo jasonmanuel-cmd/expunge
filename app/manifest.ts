@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Expunge — AI Credit Dispute Automation',
+    name: 'Expunge: DIY Credit Dispute Letters',
     short_name: 'Expunge',
-    description: 'Analyze credit reports, draft FCRA-compliant dispute letters, and file with all three bureaus automatically.',
+    description: 'Review your credit report for possible errors and draft dispute letters you mail yourself.',
     start_url: '/',
     display: 'standalone',
     background_color: '#F5F5F7',

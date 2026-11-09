@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import ExpungeLogo from '@/components/ExpungeLogo'
+import SiteNav from '@/components/marketing/SiteNav'
+import SiteFooter from '@/components/marketing/SiteFooter'
+import { Icon, Check, ICONS } from '@/components/marketing/icons'
 import { PLANS } from '@/lib/square/client'
 
 export const metadata: Metadata = {
@@ -12,106 +14,150 @@ export const metadata: Metadata = {
 const SIGNUP = '/register?plan=partner&role=partner'
 
 const STEPS = [
-  { title: 'Set up your firm', body: 'Create a firm account, add your firm name and logo, and start the monthly plan.' },
-  { title: 'Send your invite link', body: 'Share one link with clients by email or text, or at the end of a tax appointment.' },
-  { title: 'Clients upload their report', body: 'Expunge reads their credit report, flags likely errors and prepares dispute letters.' },
-  { title: 'Track every client', body: 'Your dashboard shows each client, how many items are disputed and how many came off.' },
+  { icon: ICONS.palette, title: 'Set up your firm', body: 'Create a firm account, add your firm name and logo, and start the monthly plan.' },
+  { icon: ICONS.link, title: 'Send your invite link', body: 'Share one link with clients by email or text, or at the end of a tax appointment.' },
+  { icon: ICONS.search, title: 'Clients upload their report', body: 'Expunge reads their credit report, flags possible errors and drafts dispute letters they mail themselves.' },
+  { icon: ICONS.chart, title: 'Track every client', body: 'Your dashboard shows each client, which items they disputed and what the bureaus said back.' },
 ]
 
 const WHY = [
-  { title: 'Revenue between tax seasons', body: 'Clients think about credit year round. This gives you a reason to stay in touch after April.' },
-  { title: 'Your brand, not ours', body: 'Clients see your firm name and logo when they join and every time they open their dashboard.' },
-  { title: 'No per-client billing', body: 'One flat monthly price. Invite as many clients as you serve; they never see a bill from Expunge.' },
-  { title: 'No new staff', body: 'The software does the report review and letter drafting. Your team answers questions and stays the trusted advisor.' },
+  { icon: ICONS.calendar, title: 'A reason to stay in touch', body: 'Clients think about credit year round. This gives you a helpful reason to stay in touch after April.' },
+  { icon: ICONS.palette, title: 'Your brand, not ours', body: 'Clients see your firm name and logo when they join and every time they open their dashboard.' },
+  { icon: ICONS.users, title: 'No per-client billing', body: 'One flat monthly price. Invite as many clients as you serve; they never see a bill from Expunge.' },
+  { icon: ICONS.clock, title: 'No new staff', body: 'The software does the report review and letter drafting. Your team answers questions and stays the trusted advisor.' },
+]
+
+const SEASON = [
+  { t: 'At the appointment', b: 'When a client mentions a denied loan or a confusing report, hand them your invite link.' },
+  { t: 'In your follow-up email', b: 'Add the link to your post-season thank-you so clients have a next step.' },
+  { t: 'Between seasons', b: 'Clients who joined keep using your branded portal, so your name stays in front of them.' },
 ]
 
 export default function ForTaxProsPage() {
   return (
-    <div className="min-h-screen bg-[#F5F5F7] text-[#111827]">
-      <header className="border-b border-[#E5E7EB] px-6 sm:px-8 py-4 flex items-center justify-between bg-white">
-        <Link href="/">
-          <ExpungeLogo variant="primary" width={150} height={38} />
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium text-[#6B7280] hover:text-[#111827]">Sign in</Link>
-          <Link href={SIGNUP} className="bg-[#F97316] hover:bg-[#EA580C] transition px-4 py-2.5 rounded-lg text-sm font-bold text-white">
-            Start your firm plan
-          </Link>
-        </div>
-      </header>
+    <main className="min-h-screen bg-white flex flex-col text-[#0D1B2E]">
+      <SiteNav />
 
-      <main>
-        <section className="max-w-4xl mx-auto px-6 py-20 text-center">
-          <div className="inline-block text-xs font-semibold bg-[#F97316]/10 text-[#F97316] px-3 py-1 rounded-full mb-5">
+      <section className="relative overflow-hidden bg-[#0B1426] pt-36 pb-24 sm:pt-44 sm:pb-28">
+        <div aria-hidden="true" className="absolute inset-0 hero-grid opacity-60" />
+        <div aria-hidden="true" className="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[860px] rounded-full bg-[#F97316]/20 blur-[120px]" />
+        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 text-center animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-xs sm:text-sm font-medium text-white/80 mb-7">
+            <Icon d={ICONS.doc} className="w-4 h-4 text-[#FB923C]" />
             For tax preparers and financial firms
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-5">
-            Offer credit dispute help to your clients, under your firm name
+          <h1 className="text-[2.4rem] leading-[1.05] sm:text-6xl font-bold tracking-[-0.035em] text-white">
+            Offer credit dispute help to your clients,{' '}
+            <span className="text-gradient-orange">under your firm name</span>
           </h1>
-          <p className="text-lg text-[#6B7280] max-w-2xl mx-auto mb-8">
-            Your clients already trust you with their finances. Expunge lets you add credit report review
-            and dispute letters to what you offer, for one flat monthly price.
+          <p className="mt-6 text-lg sm:text-xl leading-relaxed text-white/65 max-w-2xl mx-auto">
+            Your clients already trust you with their finances. Expunge lets you add credit report review and dispute letters to what you offer, for one flat monthly price.
           </p>
-          <Link href={SIGNUP} className="inline-block bg-[#F97316] hover:bg-[#EA580C] transition px-8 py-4 rounded-xl font-bold text-white shadow-lg shadow-orange-200">
-            Start your firm plan, {PLANS.partner.priceLabel}
-          </Link>
-        </section>
-
-        <section className="max-w-5xl mx-auto px-6 pb-16">
-          <h2 className="text-2xl font-bold text-center mb-10">How it works</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {STEPS.map((s, i) => (
-              <div key={s.title} className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
-                <div className="text-[#F97316] font-bold text-sm mb-2">Step {i + 1}</div>
-                <div className="font-semibold mb-2">{s.title}</div>
-                <div className="text-sm text-[#6B7280]">{s.body}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="max-w-5xl mx-auto px-6 pb-16">
-          <h2 className="text-2xl font-bold text-center mb-10">Why firms add it</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {WHY.map((w) => (
-              <div key={w.title} className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
-                <div className="font-semibold mb-2">{w.title}</div>
-                <div className="text-sm text-[#6B7280]">{w.body}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="max-w-xl mx-auto px-6 pb-16">
-          <div className="bg-white border-2 border-[#F97316] rounded-2xl p-8 text-center">
-            <div className="text-sm font-semibold text-[#F97316] mb-2">Firm plan</div>
-            <div className="text-4xl font-bold mb-1">{PLANS.partner.priceLabel}</div>
-            <div className="text-[#6B7280] text-sm mb-6">Cancel any time</div>
-            <ul className="text-sm text-left space-y-2 mb-8">
-              <li>• Every invited client gets full Pro access</li>
-              <li>• Your firm name and logo on client pages</li>
-              <li>• One invite link for all your clients</li>
-              <li>• Dashboard with each client&apos;s progress</li>
-            </ul>
-            <Link href={SIGNUP} className="block bg-[#F97316] hover:bg-[#EA580C] transition py-3 rounded-lg font-bold text-white">
-              Start your firm plan
+          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3">
+            <Link href={SIGNUP} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F97316] hover:bg-[#EA580C] transition-colors px-7 py-4 text-base sm:text-lg font-bold text-white shadow-[0_0_40px_rgba(249,115,22,0.45)]">
+              Start your firm plan, {PLANS.partner.priceLabel}
+            </Link>
+            <Link href="/demo" className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 transition-colors px-7 py-4 text-base sm:text-lg font-semibold text-white">
+              Book a demo
             </Link>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="max-w-3xl mx-auto px-6 pb-20">
-          <div className="bg-[#FFF7ED] border border-[#FED7AA] rounded-2xl p-6 text-sm text-[#374151]">
-            <div className="font-semibold mb-2">Before you offer credit services</div>
-            <p>
-              When you offer credit dispute help to your clients, your firm is the credit services provider.
-              Federal law (the Credit Repair Organizations Act) and many state laws apply, including rules
-              against charging clients before the work is done and, in some states, registration or a bond.
-              Expunge is software and does not give legal advice. Talk to an attorney about the rules in your
-              state before you offer this to clients.
-            </p>
+      <section className="py-24 bg-white">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.03em] text-center">How it works</h2>
+          <ol className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {STEPS.map((s, i) => (
+              <li key={s.title} className="rounded-3xl border border-black/[0.07] bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(13,27,46,0.08)]">
+                <div className="flex items-center justify-between">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0D1B2E] text-[#F97316]">
+                    <Icon d={s.icon} className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold text-[#F97316]">Step {i + 1}</span>
+                </div>
+                <div className="mt-5 font-bold">{s.title}</div>
+                <div className="mt-2 text-sm leading-relaxed text-[#615D59]">{s.body}</div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="py-24 bg-[#F6F5F4]">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.03em] text-center">Why firms add it</h2>
+          <div className="mt-12 grid sm:grid-cols-2 gap-5">
+            {WHY.map((w) => (
+              <div key={w.title} className="glow-card relative overflow-hidden flex gap-4 rounded-3xl border border-black/[0.07] bg-white p-6">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FFF7ED] text-[#F97316]">
+                  <Icon d={w.icon} className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-bold">{w.title}</div>
+                  <div className="mt-1 text-sm leading-relaxed text-[#615D59]">{w.body}</div>
+                </div>
+              </div>
+            ))}
           </div>
-        </section>
-      </main>
-    </div>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-[#0B1426] py-24">
+        <div aria-hidden="true" className="absolute inset-0 hero-grid opacity-40" />
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.03em] text-white text-center">Where it fits in your season</h2>
+          <div className="mt-12 grid md:grid-cols-3 gap-5">
+            {SEASON.map((s) => (
+              <div key={s.t} className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur">
+                <div className="font-semibold text-white">{s.t}</div>
+                <p className="mt-2 text-sm leading-relaxed text-white/60">{s.b}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 bg-white">
+        <div className="mx-auto max-w-xl px-4 sm:px-6">
+          <div className="relative rounded-3xl bg-[#0B1426] p-8 text-center text-white ring-2 ring-[#F97316] shadow-[0_24px_60px_rgba(249,115,22,0.18)]">
+            <div className="text-sm font-semibold text-[#FB923C]">Firm plan</div>
+            <div className="mt-1 text-5xl font-bold tracking-tight">{PLANS.partner.priceLabel}</div>
+            <div className="mt-1 text-sm text-white/60">Cancel any time</div>
+            <ul className="mt-7 mb-8 space-y-2.5 text-left text-sm">
+              {['Every invited client gets full Pro access', 'Your firm name and logo on client pages', 'One invite link for all your clients', 'Dashboard with each client’s progress'].map((f) => (
+                <li key={f} className="flex items-start gap-2 text-white/85"><Check /><span>{f}</span></li>
+              ))}
+            </ul>
+            <Link href={SIGNUP} className="block rounded-xl bg-[#F97316] hover:bg-[#EA580C] py-3.5 font-bold transition-colors">
+              Start your firm plan
+            </Link>
+            <Link href="/demo" className="mt-3 block text-sm font-semibold text-white/70 hover:text-white">Or book a demo first</Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white pb-24">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row gap-5 rounded-3xl border border-[#FED7AA] bg-[#FFF7ED] p-7 text-sm leading-relaxed text-[#374151]">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-[#F97316]">
+              <Icon d={ICONS.scale} className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-base font-semibold text-[#0D1B2E]">Before you offer credit services</div>
+              <p className="mt-2">
+                When you offer credit dispute help to your clients, your firm is the credit services provider.
+                Federal law (the Credit Repair Organizations Act) and many state laws apply, including rules
+                against charging clients before the work is done and, in some states, registration or a bond.
+                Expunge is software and does not give legal advice. Talk to an attorney about the rules in your
+                state before you offer this to clients.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
+    </main>
   )
 }
