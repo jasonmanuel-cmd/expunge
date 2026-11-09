@@ -1,453 +1,522 @@
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
 
-const CHECK = (
-  <svg className="w-5 h-5 text-[#16A34A] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-  </svg>
-)
+/*
+ * Homepage copy rules (keep these when editing):
+ * - Never say or imply Expunge removes, deletes, erases or wipes items.
+ * - Never promise a score increase, a number of points, or a timeline.
+ * - Only talk about disputing errors or items that may be inaccurate.
+ * - Never say "we dispute for you". The user mails their own letters.
+ * - Say "results vary" and that anyone can dispute errors with the bureaus for free.
+ * - No testimonials, user counts or result stats unless an attorney has approved them.
+ */
+
+type IconProps = { className?: string }
+
+function Icon({ d, className = 'w-5 h-5' }: IconProps & { d: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d={d} />
+    </svg>
+  )
+}
+
+const ICONS = {
+  upload: 'M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5',
+  search: 'M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z',
+  doc: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z',
+  mail: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75',
+  clock: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z',
+  shield: 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z',
+  lock: 'M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z',
+  scale: 'M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z',
+  check: 'M4.5 12.75l6 6 9-13.5',
+  arrow: 'M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3',
+  building: 'M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21',
+}
+
+/* Sample report rows for the hero mock. Shows that accurate items stay put. */
+const SAMPLE_ITEMS = [
+  { name: 'ABC COLLECTIONS', detail: 'Balance reported: $2,340', flag: 'Balance doesn’t match your records', tone: 'flag' as const },
+  { name: 'UNKNOWN AUTO LLC', detail: 'Account opened 03/2024', flag: 'You don’t recognize this account', tone: 'flag' as const },
+  { name: 'CAPITAL ONE', detail: 'Late payment · 06/2023', flag: 'Looks accurate · no dispute suggested', tone: 'ok' as const },
+  { name: 'CHASE FREEDOM', detail: 'Current · paid as agreed', flag: 'No issues found', tone: 'ok' as const },
+]
+
+const STEPS = [
+  {
+    n: '01',
+    icon: ICONS.upload,
+    title: 'Upload your report',
+    body: 'Add the credit report you pulled from Equifax, Experian or TransUnion. Expunge reads every account, inquiry and public record on it.',
+  },
+  {
+    n: '02',
+    icon: ICONS.search,
+    title: 'See what may be wrong',
+    body: 'Expunge flags items that may be inaccurate, incomplete or not yours, and explains each one in plain words. Items that look accurate are marked as accurate.',
+  },
+  {
+    n: '03',
+    icon: ICONS.mail,
+    title: 'Send your own letters',
+    body: 'Pick which items to dispute. Expunge drafts the letters and a checklist. You print, sign and mail them, and Expunge keeps your dates.',
+  },
+]
+
+const FEATURES = [
+  {
+    icon: ICONS.doc,
+    title: 'Letters that cite your rights',
+    body: 'Each letter names the item, says what looks wrong, and points to your dispute rights under the Fair Credit Reporting Act.',
+    wide: true,
+  },
+  {
+    icon: ICONS.clock,
+    title: 'Your timeline, tracked',
+    body: 'Mark a letter as mailed and Expunge reminds you when to look for the bureau’s reply.',
+    wide: false,
+  },
+  {
+    icon: ICONS.check,
+    title: 'What to attach',
+    body: 'A checklist for each letter: ID, proof of address and any records that back up your dispute.',
+    wide: false,
+  },
+  {
+    icon: ICONS.scale,
+    title: 'Honest about accurate items',
+    body: 'If an item is accurate and current, nobody can make the bureaus drop it, and Expunge won’t pretend otherwise. It helps you challenge what’s actually wrong.',
+    wide: true,
+  },
+]
+
+const FAQ = [
+  {
+    q: 'Can I dispute errors without Expunge?',
+    a: 'Yes. You have the right to dispute inaccurate information directly with Equifax, Experian and TransUnion, for free. Expunge makes it easier to find possible errors and write the letters, but you never need to pay anyone to dispute.',
+  },
+  {
+    q: 'Does Expunge remove items from my report?',
+    a: 'No. Only the credit bureaus and the companies that report to them decide what stays on your report. Expunge helps you challenge items that may be inaccurate. Results vary, and accurate, current information can stay on your report.',
+  },
+  {
+    q: 'Does Expunge send disputes for me?',
+    a: 'No. Expunge drafts the letters and instructions. You decide what to send, then sign and mail every letter yourself.',
+  },
+  {
+    q: 'Will disputing hurt my credit score?',
+    a: 'Filing a dispute does not by itself lower your score. The bureau investigates and tells you the result.',
+  },
+  {
+    q: 'Is this legal advice?',
+    a: 'No. Expunge is software, not a law firm, and does not give legal advice.',
+  },
+]
+
+function Check() {
+  return (
+    <svg className="w-4 h-4 text-[#16A34A] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  )
+}
+
+const PLANS = [
+  {
+    key: 'free',
+    name: 'Free',
+    price: '$0',
+    per: 'forever',
+    blurb: 'Try Expunge with one report.',
+    features: ['1 credit report', 'Up to 3 items disputed', 'Letters for 1 bureau', 'AI report review', 'Email support'],
+    href: '/register',
+    cta: 'Start free',
+    style: 'plain' as const,
+  },
+  {
+    key: 'basic',
+    name: 'Basic',
+    price: '$49.99',
+    per: '/mo',
+    blurb: 'Dispute a few items.',
+    features: ['Up to 5 credit reports, 15 items each', 'A plain-words explanation and your dispute options for each item', 'Dispute letters for all 3 bureaus', 'Step-by-step sending and follow-up instructions', '30-day follow-up tracking', 'Priority support'],
+    href: '/register?plan=basic',
+    cta: 'Choose Basic',
+    style: 'plain' as const,
+  },
+  {
+    key: 'pro',
+    name: 'Pro',
+    price: '$99.99',
+    per: '/mo',
+    blurb: 'Your whole report, reviewed.',
+    features: ['Every item on your report reviewed', 'Full breakdown: type, age, what may be wrong, your options', 'Dispute letters for all 3 bureaus for every item you choose', 'Complete instructions: how to send, what to attach, when to follow up', 'Organized dashboard', 'Dedicated support for complex reports'],
+    href: '/register?plan=pro',
+    cta: 'Choose Pro',
+    style: 'featured' as const,
+  },
+  {
+    key: 'partner',
+    name: 'Partner',
+    price: '$299.99',
+    per: '/mo',
+    blurb: 'For tax and finance firms.',
+    features: ['Everything in Pro for every client you invite', 'Your firm name and logo on client sign-up and dashboard', 'One private invite link for all your clients', 'Dashboard showing each client and their disputes', 'One flat monthly price, no per-client billing'],
+    href: '/for-tax-pros',
+    cta: 'See the firm plan',
+    style: 'dashed' as const,
+  },
+]
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white flex flex-col" style={{ fontFamily: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+    <main className="min-h-screen bg-white flex flex-col text-[#0D1B2E]">
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md" style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <ExpungeLogo variant="primary" width={160} height={40} />
-          </Link>
-          <div className="hidden sm:flex items-center gap-8">
-            <Link href="#how-it-works" className="text-sm transition font-medium" style={{ color: '#615d59' }}>How it works</Link>
-            <Link href="#pricing" className="text-sm transition font-medium" style={{ color: '#615d59' }}>Pricing</Link>
-            <Link href="/for-tax-pros" className="text-sm transition font-medium" style={{ color: '#615d59' }}>For tax firms</Link>
-            <Link href="/login" className="text-sm transition font-medium" style={{ color: '#615d59' }}>Sign in</Link>
+      {/* ── Nav ─────────────────────────────────────────── */}
+      <nav className="fixed top-0 inset-x-0 z-50">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-4">
+          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#0B1426]/70 backdrop-blur-xl px-4 sm:px-5 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+            <Link href="/" className="flex items-center" aria-label="Expunge home">
+              <ExpungeLogo variant="primary" light width={136} height={34} />
+            </Link>
+            <div className="hidden md:flex items-center gap-7 text-sm font-medium text-white/70">
+              <Link href="#how-it-works" className="hover:text-white transition-colors">How it works</Link>
+              <Link href="#features" className="hover:text-white transition-colors">Features</Link>
+              <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
+              <Link href="/for-tax-pros" className="hover:text-white transition-colors">For tax firms</Link>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link href="/login" className="hidden sm:inline text-sm font-medium text-white/70 hover:text-white transition-colors px-2">Sign in</Link>
+              <Link
+                href="/register"
+                className="text-sm font-semibold text-white bg-[#F97316] hover:bg-[#EA580C] transition-colors rounded-xl px-4 py-2 shadow-[0_0_24px_rgba(249,115,22,0.45)]"
+              >
+                Start free
+              </Link>
+            </div>
           </div>
-          <Link
-            href="/register"
-            className="text-sm bg-[#F97316] hover:bg-[#EA580C] transition-all duration-300 px-5 py-2.5 rounded-lg font-semibold text-white"
-            style={{ boxShadow: '0 2px 8px rgba(249,115,22,0.25)' }}
-          >
-            Scan your report free
-          </Link>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative pt-20 pb-24 sm:pt-28 sm:pb-32 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Left: copy */}
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: '#f6f5f4', color: '#615d59', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
-                Document generation + insider playbook
+      {/* ── Hero ────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-[#0B1426] pt-36 pb-24 sm:pt-44 sm:pb-32">
+        {/* Background: grid + glows */}
+        <div aria-hidden="true" className="absolute inset-0 hero-grid opacity-60" />
+        <div aria-hidden="true" className="absolute -top-40 left-1/2 -translate-x-1/2 h-[560px] w-[900px] rounded-full bg-[#F97316]/20 blur-[120px]" />
+        <div aria-hidden="true" className="absolute top-1/3 -right-40 h-[420px] w-[420px] rounded-full bg-[#1E3A5F]/70 blur-[100px]" />
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[#0B1426]" />
+
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-14 lg:gap-12 items-center">
+            {/* Copy */}
+            <div className="animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-xs sm:text-sm font-medium text-white/80 mb-7">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-75 motion-safe:animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#22C55E]" />
+                </span>
+                Do-it-yourself dispute letters · You stay in control
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold leading-[1.1] mb-6" style={{ color: 'rgba(0,0,0,0.95)', letterSpacing: '-1.5px' }}>
-                See every negative item. Get the letters and instructions to{' '}
-                <span className="text-[#F97316]">erase them.</span>
+              <h1 className="text-[2.5rem] leading-[1.05] sm:text-6xl lg:text-[4.25rem] font-bold tracking-[-0.035em] text-white">
+                Find the errors on your credit report.{' '}
+                <span className="text-gradient-orange">Get dispute letters you send yourself.</span>
               </h1>
 
-              <p className="text-lg sm:text-xl max-w-xl mb-10 leading-relaxed" style={{ color: '#615d59' }}>
-                Expunge scans your credit report, breaks down every negative item, and generates dispute letters plus step-by-step instructions you can use yourself. A full AI concierge service that handles disputes for you is coming soon.
+              <p className="mt-6 text-lg sm:text-xl leading-relaxed text-white/65 max-w-xl">
+                Expunge reads your credit report, flags items that may be inaccurate or not yours, and drafts the dispute letters and instructions. You decide what to send, and you mail it.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-12">
+              <div className="mt-10 flex flex-col sm:flex-row gap-3">
                 <Link
                   href="/register"
-                  className="bg-[#F97316] hover:bg-[#EA580C] transition-all duration-300 px-8 py-4 rounded-xl font-bold text-lg text-white text-center"
-                  style={{ boxShadow: '0 4px 20px rgba(249,115,22,0.3)' }}
+                  className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#F97316] hover:bg-[#EA580C] transition-colors px-7 py-4 text-base sm:text-lg font-bold text-white shadow-[0_0_40px_rgba(249,115,22,0.45)]"
                 >
-                  Scan your report free — no card required
+                  Check your report free
+                  <Icon d={ICONS.arrow} className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
                 </Link>
                 <Link
                   href="#how-it-works"
-                  className="transition-all duration-300 px-8 py-4 rounded-xl font-semibold text-lg text-center"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.04)', color: '#374151' }}
+                  className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 transition-colors px-7 py-4 text-base sm:text-lg font-semibold text-white"
                 >
                   See how it works
                 </Link>
               </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-8" style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '2rem' }}>
-                {[
-                  { value: '3', label: 'Bureaus covered' },
-                  { value: 'FCRA', label: 'Letters cite federal law' },
-                  { value: 'PDF', label: 'Ready-to-mail letters' },
-                  { value: '$0', label: 'To scan your first report' },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <div className="text-2xl sm:text-3xl font-bold" style={{ color: 'rgba(0,0,0,0.95)' }}>{s.value}</div>
-                    <div className="text-xs sm:text-sm mt-1" style={{ color: '#a39e98' }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
+              <p className="mt-4 text-sm text-white/45">No card needed for the free plan. Results vary.</p>
             </div>
 
-            {/* Right: visual mock of credit report */}
-            <div className="hidden lg:block">
-              <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02)' }}>
-                {/* Report header */}
-                <div className="px-6 py-4 flex items-center justify-between" style={{ backgroundColor: '#14213D' }}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
+            {/* Report mock */}
+            <div className="relative animate-fade-in-up-delay-2">
+              <div aria-hidden="true" className="absolute -inset-6 rounded-[2rem] bg-gradient-to-tr from-[#F97316]/25 via-transparent to-[#4A7FA8]/25 blur-2xl" />
+              <div className="relative rounded-2xl border border-white/10 bg-white/[0.04] p-1.5 backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+                <div className="relative overflow-hidden rounded-xl bg-white">
+                  {/* Scanning line */}
+                  <div aria-hidden="true" className="scan-line pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#F97316]/0 via-[#F97316]/15 to-[#F97316]/0" />
+
+                  <div className="flex items-center justify-between bg-[#0D1B2E] px-5 py-3.5">
+                    <div className="flex items-center gap-2.5 text-white">
+                      <Icon d={ICONS.doc} className="w-4 h-4 text-[#F97316]" />
+                      <span className="text-sm font-semibold">Report review</span>
                     </div>
-                    <span className="text-white font-semibold text-sm">Credit Report Analysis</span>
+                    <span className="text-[11px] uppercase tracking-wider text-white/45">Sample</span>
                   </div>
-                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Sample view</span>
-                </div>
-                {/* Report items */}
-                <div className="p-4 space-y-3">
-                  {[
-                    { name: 'CAPITAL ONE PLATINUM', type: 'Credit Card', status: 'negative', statusText: 'Late payment · 120 days' },
-                    { name: 'ABC COLLECTIONS', type: 'Collection', status: 'negative', statusText: 'Collection account · $2,340' },
-                    { name: 'EQUIFAX INQUIRY', type: 'Inquiry', status: 'negative', statusText: 'Unauthorized hard pull' },
-                    { name: 'CHASE FREEDOM', type: 'Credit Card', status: 'positive', statusText: 'Current · On time' },
-                  ].map((item) => (
-                    <div
-                      key={item.name}
-                      className="flex items-center justify-between p-3 rounded-lg"
-                      style={{
-                        backgroundColor: item.status === 'negative' ? '#FEF2F2' : '#F0FDF4',
-                        border: `1px solid ${item.status === 'negative' ? '#FECACA' : '#BBF7D0'}`,
-                      }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${item.status === 'negative' ? 'bg-[#DC2626]' : 'bg-[#16A34A]'}`} />
-                        <div>
-                          <div className="text-sm font-semibold" style={{ color: 'rgba(0,0,0,0.95)' }}>{item.name}</div>
-                          <div className="text-xs" style={{ color: '#a39e98' }}>{item.type}</div>
+
+                  <ul className="divide-y divide-black/5">
+                    {SAMPLE_ITEMS.map((item) => (
+                      <li key={item.name} className="flex items-start justify-between gap-4 px-5 py-3.5">
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-[#0D1B2E] truncate">{item.name}</div>
+                          <div className="text-xs text-[#8A847E]">{item.detail}</div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`text-xs font-medium ${item.status === 'negative' ? 'text-[#DC2626]' : 'text-[#16A34A]'}`}>{item.statusText}</div>
-                        {item.status === 'negative' && (
-                          <div className="text-xs text-[#F97316] font-semibold mt-0.5">→ Dispute letter ready</div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                        <span
+                          className={`shrink-0 max-w-[55%] text-right text-[11px] sm:text-xs font-medium rounded-lg px-2.5 py-1 ${
+                            item.tone === 'flag'
+                              ? 'bg-[#FFF7ED] text-[#C2410C] ring-1 ring-[#FED7AA]'
+                              : 'bg-[#F0FDF4] text-[#15803D] ring-1 ring-[#BBF7D0]'
+                          }`}
+                        >
+                          {item.flag}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="flex items-center justify-between gap-3 border-t border-black/5 bg-[#F6F5F4] px-5 py-3">
+                    <span className="text-xs text-[#8A847E]">2 items may be wrong</span>
+                    <span className="text-xs font-semibold text-[#EA580C]">2 draft letters for you to review</span>
+                  </div>
                 </div>
-                {/* Bottom summary */}
-                <div className="px-6 py-3 flex items-center justify-between" style={{ borderTop: '1px solid rgba(0,0,0,0.08)', backgroundColor: '#f6f5f4' }}>
-                  <span className="text-xs" style={{ color: '#a39e98' }}>3 negative items found</span>
-                  <span className="text-xs font-semibold text-[#F97316]">3 dispute letters generated →</span>
+              </div>
+
+              {/* Floating chip */}
+              <div className="float-slow absolute -bottom-6 -left-4 sm:-left-8 hidden sm:flex items-center gap-3 rounded-2xl border border-black/5 bg-white px-4 py-3 shadow-[0_16px_40px_rgba(0,0,0,0.25)]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFF7ED] text-[#F97316]">
+                  <Icon d={ICONS.mail} className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-[#0D1B2E]">Letter marked as mailed</div>
+                  <div className="text-[11px] text-[#8A847E]">We&apos;ll remind you when to check back</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Trust strip */}
-          <div className="mt-16 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm" style={{ color: '#a39e98' }}>
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-[#16A34A]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-              Encrypted in transit and at rest
-            </span>
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-[#16A34A]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              Not a law firm. Not legal advice.
-            </span>
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-[#16A34A]" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" /></svg>
-              Software that helps you handle your own disputes
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" className="py-24 sm:py-32" style={{ backgroundColor: '#f6f5f4' }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: 'rgba(0,0,0,0.04)', color: '#615d59', border: '1px solid rgba(0,0,0,0.08)' }}>
-              How it works
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ color: 'rgba(0,0,0,0.95)', letterSpacing: '-1.5px' }}>
-              Three steps to a cleaner report
-            </h2>
-            <p className="text-lg max-w-xl mx-auto" style={{ color: '#615d59' }}>
-              From upload to ready-to-send letters and instructions in minutes, not months.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
             {[
-              {
-                step: '01',
-                title: 'Upload your report',
-                desc: 'Connect your credit report securely. Expunge extracts every negative item — late payments, collections, bankruptcies, inquiries, and more.',
-                icon: (
-                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                  </svg>
-                ),
-              },
-              {
-                step: '02',
-                title: 'We break down every negative item',
-                desc: 'Our AI engine scans each negative item and explains what it is, how it impacts your score, and where there may be issues to dispute. Basic covers up to 5 items each month; Pro covers your entire report.',
-                icon: (
-                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
-                  </svg>
-                ),
-              },
-              {
-                step: '03',
-                title: 'Letters and instructions you can use',
-                desc: 'Expunge generates dispute letters for all three bureaus plus follow-up templates and a checklist for each item. You choose which letters to send, when, and how far to push — we give you the playbook, you stay in control.',
-                icon: (
-                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                  </svg>
-                ),
-              },
-            ].map((item) => (
-              <div
-                key={item.step}
-                className="group relative rounded-2xl p-8 transition-all duration-500 hover:-translate-y-1"
-                style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}
-              >
-                <div className="absolute top-6 right-6 text-5xl font-bold" style={{ color: 'rgba(0,0,0,0.06)' }}>
-                  {item.step}
+              { icon: ICONS.doc, top: 'All 3 bureaus', sub: 'Equifax, Experian, TransUnion' },
+              { icon: ICONS.scale, top: 'Cites the FCRA', sub: 'Your federal dispute rights' },
+              { icon: ICONS.lock, top: 'Encrypted', sub: 'In transit and at rest' },
+              { icon: ICONS.shield, top: 'You mail it', sub: 'Expunge never files for you' },
+            ].map((t) => (
+              <div key={t.top} className="flex items-center gap-3 bg-[#0B1426] px-4 sm:px-6 py-5">
+                <Icon d={t.icon} className="w-5 h-5 shrink-0 text-[#F97316]" />
+                <div>
+                  <div className="text-sm font-semibold text-white">{t.top}</div>
+                  <div className="text-xs text-white/50">{t.sub}</div>
                 </div>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}>
-                  {item.icon}
-                </div>
-                <h3 className="text-xl font-bold mb-3" style={{ color: 'rgba(0,0,0,0.95)' }}>{item.title}</h3>
-                <p className="leading-relaxed" style={{ color: '#615d59' }}>{item.desc}</p>
               </div>
             ))}
           </div>
-
-          {/* Disclaimer */}
-          <div className="mt-12 text-center">
-            <p className="text-sm max-w-2xl mx-auto" style={{ color: '#a39e98' }}>
-              Expunge is software, not a law firm. We don&apos;t provide legal advice; we help you generate documents and instructions so you can handle your own disputes.
-            </p>
-          </div>
         </div>
       </section>
 
-      {/* Insider Strategies */}
-      <section className="py-24 sm:py-32" style={{ backgroundColor: '#14213D' }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#F97316', border: '1px solid rgba(255,255,255,0.15)' }}>
-                Insider playbook
-              </div>
-              <h2 className="text-3xl sm:text-5xl font-bold mb-4 text-white" style={{ letterSpacing: '-1.5px' }}>
-                Credit pro tactics built into every letter
-              </h2>
-              <p className="text-lg mb-8 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Credit pros know timing, phrasing, and escalation matter. Expunge bakes those patterns into your letters and instructions — without you having to study credit law.
-              </p>
-              <div className="space-y-5">
-                {[
-                  { title: 'Timing tactics', desc: 'Suggested sending and follow-up windows so bureaus can\'t stall your response timeline.' },
-                  { title: 'Evidence stacking', desc: 'Guidance on what to attach (ID, proof of address, statements) so your dispute isn\'t rejected as "incomplete" on a technicality.' },
-                  { title: 'Language patterns', desc: 'Phrases commonly used in successful disputes are woven into your letters automatically.' },
-                  { title: 'Escalation playbook', desc: 'Templates and instructions for escalating when bureaus ignore you or respond with form letters.' },
-                ].map((item) => (
-                  <div key={item.title} className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#F97316' }} />
-                    <div>
-                      <div className="font-semibold text-white">{item.title}</div>
-                      <div className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{item.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="text-sm mt-8" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                These tactics are based on patterns in public FCRA-related information and dispute practices. They&apos;re not legal advice; they&apos;re practical guidance for handling your own disputes.
-              </p>
-            </div>
-            <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <div className="text-sm font-semibold mb-4" style={{ color: 'rgba(255,255,255,0.7)' }}>Sample item breakdown</div>
-              <div className="bg-white rounded-xl p-5 space-y-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
+      {/* ── How it works ────────────────────────────────── */}
+      <section id="how-it-works" className="relative py-24 sm:py-32 bg-white scroll-mt-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F97316]">How it works</p>
+            <h2 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-0.03em]">Three steps to dispute errors</h2>
+            <p className="mt-4 text-lg text-[#615D59]">From your report to letters you can mail. You make every decision along the way.</p>
+          </div>
+
+          <ol className="relative mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div aria-hidden="true" className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-[#F97316]/40 to-transparent" />
+            {STEPS.map((s) => (
+              <li key={s.n} className="group relative rounded-3xl border border-black/[0.07] bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(13,27,46,0.08)]">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-bold" style={{ color: 'rgba(0,0,0,0.95)' }}>ABC COLLECTIONS</div>
-                    <div className="text-sm" style={{ color: '#615d59' }}>Collection account · $2,340 · Opened 03/2022</div>
+                  <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0D1B2E] text-[#F97316] shadow-[0_8px_24px_rgba(13,27,46,0.25)]">
+                    <Icon d={s.icon} className="w-6 h-6" />
                   </div>
-                  <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: '#FEF2F2', color: '#DC2626' }}>Negative</span>
+                  <span className="text-5xl font-bold text-black/[0.06] tabular-nums">{s.n}</span>
                 </div>
-                <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }} className="pt-4">
-                  <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#a39e98' }}>Potential issues found</div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(0,0,0,0.95)' }}>
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#F97316' }} />
-                      Balance may be inaccurate — request validation
-                    </div>
-                    <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(0,0,0,0.95)' }}>
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#F97316' }} />
-                      Account ownership unverified — dispute as &quot;not mine&quot;
-                    </div>
-                    <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(0,0,0,0.95)' }}>
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#F97316' }} />
-                      Past statute of limitations — request removal
-                    </div>
-                  </div>
+                <h3 className="mt-6 text-xl font-bold">{s.title}</h3>
+                <p className="mt-2 leading-relaxed text-[#615D59]">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ── Features (bento) ────────────────────────────── */}
+      <section id="features" className="py-24 sm:py-32 bg-[#F6F5F4] scroll-mt-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F97316]">What you get</p>
+            <h2 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-0.03em]">Clear letters. Clear next steps.</h2>
+            <p className="mt-4 text-lg text-[#615D59]">Reading a credit report shouldn&apos;t need a lawyer&apos;s vocabulary. Expunge explains it and does the paperwork.</p>
+          </div>
+
+          <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-5">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className={`glow-card relative overflow-hidden rounded-3xl border border-black/[0.07] bg-white p-7 ${f.wide ? 'md:col-span-2' : ''}`}
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF7ED] text-[#F97316]">
+                  <Icon d={f.icon} className="w-5 h-5" />
                 </div>
-                <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }} className="pt-4">
-                  <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#a39e98' }}>Recommended options</div>
-                  <div className="flex flex-wrap gap-2">
-                    {['Dispute as inaccurate', 'Request validation', 'Negotiate pay-for-delete', 'Leave for now'].map((opt) => (
-                      <span key={opt} className="text-xs px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#f6f5f4', color: '#615d59', border: '1px solid rgba(0,0,0,0.08)' }}>{opt}</span>
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-lg p-3" style={{ backgroundColor: '#FFF7ED', border: '1px solid #FED7AA' }}>
-                  <div className="text-xs font-semibold text-[#F97316] mb-1">How a credit pro would attack this</div>
-                  <div className="text-xs" style={{ color: '#9A3412' }}>&quot;Send a debt validation request first. If they can&apos;t validate within 30 days, demand removal under FCRA § 611. If they re-report, escalate to CFPB.&quot;</div>
-                </div>
+                <h3 className="mt-5 text-lg font-bold">{f.title}</h3>
+                <p className="mt-2 leading-relaxed text-[#615D59] max-w-lg">{f.body}</p>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-24 sm:py-32" style={{ backgroundColor: '#f6f5f4' }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-8" style={{ backgroundColor: 'rgba(0,0,0,0.04)', color: '#615d59', border: '1px solid rgba(0,0,0,0.08)' }}>
-              Pricing
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ color: 'rgba(0,0,0,0.95)', letterSpacing: '-1.5px' }}>
-              Simple, transparent pricing
-            </h2>
-            <p className="text-lg max-w-xl mx-auto" style={{ color: '#615d59' }}>
-              Start free. Upgrade when you want the full playbook.
+      {/* ── Your rights (dark band) ─────────────────────── */}
+      <section className="relative overflow-hidden bg-[#0B1426] py-24 sm:py-28">
+        <div aria-hidden="true" className="absolute inset-0 hero-grid opacity-40" />
+        <div aria-hidden="true" className="absolute -bottom-40 -left-20 h-[420px] w-[620px] rounded-full bg-[#F97316]/15 blur-[120px]" />
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F97316]">Know your rights</p>
+            <h2 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-0.03em] text-white">Disputing errors is free. Doing it well takes work.</h2>
+            <p className="mt-5 text-lg leading-relaxed text-white/65">
+              You have the right to dispute inaccurate information directly with the credit bureaus, at no cost. The hard part is spotting the errors and writing a clear letter. That&apos;s the part Expunge helps with.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* Free */}
-            <div className="rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}>
-              <div className="mb-6">
-                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Free</div>
-                <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$0 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>forever</span></div>
-                <div className="text-sm" style={{ color: '#615d59' }}>Try Expunge with one report.</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              { t: 'Dispute errors, not the truth', b: 'Wrong balance, wrong date, an account that isn’t yours. Those are worth challenging.' },
+              { t: 'Keep your receipts', b: 'Keep a copy of every letter, send it with tracking and write down the date.' },
+              { t: 'Watch for the reply', b: 'The bureau generally has 30 days to look into a dispute (up to 45 in some cases) and must tell you what it found.' },
+              { t: 'Skip the shortcuts', b: 'Never file a false identity theft report or use a CPN. Both can be crimes.' },
+            ].map((x) => (
+              <div key={x.t} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
+                <div className="flex items-center gap-2 text-white font-semibold">
+                  <Icon d={ICONS.check} className="w-4 h-4 text-[#22C55E]" />
+                  {x.t}
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-white/55">{x.b}</p>
               </div>
-              <ul className="space-y-3 mb-8 flex-1">
-                {['1 credit report', 'Up to 3 items disputed', 'Letters for 1 bureau', 'AI analysis', 'Email support'].map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
-                    {CHECK}
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/register" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block" style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#374151' }}>
-                Start free
-              </Link>
-            </div>
-
-            {/* Basic */}
-            <div className="rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}>
-              <div className="mb-6">
-                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Basic</div>
-                <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$49.99 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>/mo</span></div>
-                <div className="text-sm" style={{ color: '#615d59' }}>Fix a few key items.</div>
-              </div>
-              <ul className="space-y-3 mb-8 flex-1">
-                {['Up to 5 credit reports, 15 items each', 'For each item: explanation, impact, and how a credit pro would attack it', 'AI-generated dispute letters for all 3 bureaus', 'Step-by-step sending and follow-up instructions', '30-day tracking guidance', 'Priority support'].map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
-                    {CHECK}
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/register?plan=basic" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block" style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#374151' }}>
-                Choose Basic
-              </Link>
-            </div>
-
-            {/* Pro */}
-            <div className="relative rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '2px solid #F97316', boxShadow: '0 8px 32px rgba(249,115,22,0.12)' }}>
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#F97316] text-white text-xs font-bold px-4 py-1 rounded-full">
-                RECOMMENDED
-              </div>
-              <div className="mb-6">
-                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Pro</div>
-                <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$99.99 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>/mo</span></div>
-                <div className="text-sm" style={{ color: '#615d59' }}>Full report breakdown.</div>
-              </div>
-              <ul className="space-y-3 mb-8 flex-1">
-                {['Every negative item on your report, no limits', 'Full breakdown: type, age, impact, dispute potential, recommended options', 'AI-generated dispute letters for all 3 bureaus for every item', 'Complete instruction set: how to send, what to attach, when to follow up', 'Organized dashboard', 'Dedicated support for complex reports'].map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
-                    {CHECK}
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/register?plan=pro" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block bg-[#F97316] hover:bg-[#EA580C] text-white" style={{ boxShadow: '0 4px 16px rgba(249,115,22,0.3)' }}>
-                Choose Pro
-              </Link>
-            </div>
-
-            {/* Partner */}
-            <div className="rounded-2xl p-6 flex flex-col" style={{ backgroundColor: '#fff', border: '1px dashed rgba(0,0,0,0.15)' }}>
-              <div className="mb-6">
-                <div className="text-sm font-medium mb-1" style={{ color: '#a39e98' }}>Partner <span className="text-xs text-[#F97316] font-bold">(for tax and finance firms)</span></div>
-                <div className="text-4xl font-bold mb-1" style={{ color: 'rgba(0,0,0,0.95)' }}>$299.99 <span className="text-lg font-normal" style={{ color: '#a39e98' }}>/mo</span></div>
-                <div className="text-sm" style={{ color: '#615d59' }}>Offer it to every client you serve.</div>
-              </div>
-              <ul className="space-y-3 mb-6 flex-1">
-                {['Everything in Pro for every client you invite', 'Your firm name and logo on client sign-up and dashboard', 'One private invite link for all your clients', 'Dashboard showing each client and their disputes', 'One flat monthly price, no per-client billing'].map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
-                    {CHECK}
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs mb-4" style={{ color: '#a39e98' }}>Expunge prepares the letters and instructions. Your clients mail their own disputes.</p>
-              <Link href="/for-tax-pros" className="w-full text-center py-3.5 rounded-xl text-sm font-bold transition-all duration-300 block" style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#374151' }}>
-                See the firm plan
-              </Link>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Bottom CTA */}
-      <section className="py-24 sm:py-32" style={{ backgroundColor: '#14213D' }}>
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4 text-white" style={{ letterSpacing: '-1.5px' }}>
-            Ready to start erasing what&apos;s holding your score back?
-          </h2>
-          <p className="text-lg mb-10 max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            See every negative item on your report, get the letters and instructions to fight them, and know what&apos;s actually possible — without guessing or hiring an expensive credit repair company.
+      {/* ── Pricing ─────────────────────────────────────── */}
+      <section id="pricing" className="py-24 sm:py-32 bg-white scroll-mt-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F97316]">Pricing</p>
+            <h2 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-0.03em]">Simple, transparent pricing</h2>
+            <p className="mt-4 text-lg text-[#615D59]">Start free. Upgrade when you want more reports and all three bureaus.</p>
+          </div>
+
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {PLANS.map((p) => (
+              <div
+                key={p.key}
+                className={`relative flex flex-col rounded-3xl p-6 ${
+                  p.style === 'featured'
+                    ? 'bg-[#0B1426] text-white ring-2 ring-[#F97316] shadow-[0_24px_60px_rgba(249,115,22,0.18)]'
+                    : p.style === 'dashed'
+                      ? 'bg-white border border-dashed border-black/20'
+                      : 'bg-white border border-black/[0.08]'
+                }`}
+              >
+                {p.style === 'featured' && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#F97316] px-3.5 py-1 text-[11px] font-bold tracking-wider text-white">
+                    MOST COMPLETE
+                  </div>
+                )}
+                <div className={`text-sm font-medium ${p.style === 'featured' ? 'text-white/60' : 'text-[#8A847E]'}`}>{p.name}</div>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="text-4xl font-bold tracking-tight">{p.price}</span>
+                  <span className={`text-base ${p.style === 'featured' ? 'text-white/50' : 'text-[#8A847E]'}`}>{p.per}</span>
+                </div>
+                <div className={`mt-1 text-sm ${p.style === 'featured' ? 'text-white/70' : 'text-[#615D59]'}`}>{p.blurb}</div>
+                <ul className="mt-6 mb-8 flex-1 space-y-3">
+                  {p.features.map((f) => (
+                    <li key={f} className={`flex items-start gap-2 text-sm ${p.style === 'featured' ? 'text-white/85' : 'text-[#374151]'}`}>
+                      <Check />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                {p.key === 'partner' && (
+                  <p className="mb-4 text-xs text-[#8A847E]">Expunge prepares the letters and instructions. Your clients mail their own disputes.</p>
+                )}
+                <Link
+                  href={p.href}
+                  className={`block w-full rounded-xl py-3.5 text-center text-sm font-bold transition-colors ${
+                    p.style === 'featured'
+                      ? 'bg-[#F97316] hover:bg-[#EA580C] text-white shadow-[0_0_30px_rgba(249,115,22,0.4)]'
+                      : 'border border-black/10 text-[#374151] hover:bg-black/[0.03]'
+                  }`}
+                >
+                  {p.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-center text-sm text-[#8A847E]">Paid plans renew monthly. Cancel any time. Results vary and are not guaranteed.</p>
+        </div>
+      </section>
+
+      {/* ── FAQ ─────────────────────────────────────────── */}
+      <section className="py-24 sm:py-28 bg-[#F6F5F4]">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.03em] text-center">Straight answers</h2>
+          <div className="mt-12 space-y-3">
+            {FAQ.map((f) => (
+              <details key={f.q} className="group rounded-2xl border border-black/[0.07] bg-white px-6 py-5 open:shadow-[0_12px_32px_rgba(13,27,46,0.06)]">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
+                  {f.q}
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F6F5F4] text-[#F97316] transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+                </summary>
+                <p className="mt-3 leading-relaxed text-[#615D59]">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Bottom CTA ──────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-[#0B1426] py-24 sm:py-32">
+        <div aria-hidden="true" className="absolute inset-0 hero-grid opacity-50" />
+        <div aria-hidden="true" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[780px] rounded-full bg-[#F97316]/20 blur-[120px]" />
+        <div className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center">
+          <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.03em] text-white">Check your report for errors</h2>
+          <p className="mt-5 text-lg text-white/65">
+            Anyone can dispute errors with the bureaus for free. Expunge helps you find what may be wrong and write the letters, so you can handle it yourself.
           </p>
           <Link
             href="/register"
-            className="inline-block bg-[#F97316] hover:bg-[#EA580C] transition-all duration-300 px-10 py-4 rounded-xl font-bold text-lg text-white"
-            style={{ boxShadow: '0 8px 32px rgba(249,115,22,0.3)' }}
+            className="mt-10 inline-flex items-center gap-2 rounded-xl bg-[#F97316] hover:bg-[#EA580C] transition-colors px-9 py-4 text-lg font-bold text-white shadow-[0_0_48px_rgba(249,115,22,0.5)]"
           >
-            Get started free
+            Start free
+            <Icon d={ICONS.arrow} className="w-5 h-5" />
           </Link>
-          <p className="text-sm mt-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Free plan needs no credit card · Cancel paid plans anytime · You mail every dispute yourself</p>
+          <p className="mt-5 text-sm text-white/40">Free plan needs no card · Results vary · You mail every dispute yourself</p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-10 px-6 bg-white" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <ExpungeLogo variant="primary" width={130} height={32} />
-          </div>
-          <div className="flex items-center gap-6 text-sm" style={{ color: '#a39e98' }}>
-            <Link href="/terms" className="hover:text-[#615d59] transition">Terms</Link>
-            <Link href="/privacy" className="hover:text-[#615d59] transition">Privacy</Link>
-            <span>Expunge is not a law firm and does not provide legal advice.</span>
+      {/* ── Footer ──────────────────────────────────────── */}
+      <footer className="bg-white border-t border-black/[0.07] px-4 sm:px-6 py-10">
+        <div className="mx-auto max-w-6xl flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <ExpungeLogo variant="primary" width={130} height={32} />
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#8A847E]">
+            <Link href="/for-tax-pros" className="hover:text-[#615D59] transition-colors">For tax firms</Link>
+            <Link href="/terms" className="hover:text-[#615D59] transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-[#615D59] transition-colors">Privacy</Link>
           </div>
         </div>
+        <p className="mx-auto mt-6 max-w-6xl text-xs leading-relaxed text-[#A39E98]">
+          Expunge is software, not a law firm, and does not provide legal advice. Expunge does not remove items from credit reports and does not contact credit bureaus or creditors for you. You have the right to dispute inaccurate information with the credit bureaus directly, for free. Results vary.
+        </p>
       </footer>
     </main>
   )

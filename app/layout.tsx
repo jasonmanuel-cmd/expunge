@@ -9,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Expunge — AI Credit Dispute Automation",
+  title: "Expunge | Find credit report errors and draft your own dispute letters",
   description:
-    "Expunge reads your credit report, flags items worth disputing, and drafts FCRA-based dispute letters you can download and mail yourself.",
+    "Expunge reads your credit report, flags items that may be inaccurate, and drafts dispute letters you mail yourself. Free plan available. Results vary.",
   icons: {
     icon: "/favicon.svg",
     apple: "/icon.svg",

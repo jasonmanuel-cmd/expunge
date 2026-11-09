@@ -14,12 +14,12 @@ const SIGNUP = '/register?plan=partner&role=partner'
 const STEPS = [
   { title: 'Set up your firm', body: 'Create a firm account, add your firm name and logo, and start the monthly plan.' },
   { title: 'Send your invite link', body: 'Share one link with clients by email or text, or at the end of a tax appointment.' },
-  { title: 'Clients upload their report', body: 'Expunge reads their credit report, flags likely errors and prepares dispute letters.' },
-  { title: 'Track every client', body: 'Your dashboard shows each client, how many items are disputed and how many came off.' },
+  { title: 'Clients upload their report', body: 'Expunge reads their credit report, flags possible errors and drafts dispute letters they mail themselves.' },
+  { title: 'Track every client', body: 'Your dashboard shows each client, which items they disputed and what the bureaus said back.' },
 ]
 
 const WHY = [
-  { title: 'Revenue between tax seasons', body: 'Clients think about credit year round. This gives you a reason to stay in touch after April.' },
+  { title: 'A reason to stay in touch', body: 'Clients think about credit year round. This gives you a helpful reason to stay in touch after April.' },
   { title: 'Your brand, not ours', body: 'Clients see your firm name and logo when they join and every time they open their dashboard.' },
   { title: 'No per-client billing', body: 'One flat monthly price. Invite as many clients as you serve; they never see a bill from Expunge.' },
   { title: 'No new staff', body: 'The software does the report review and letter drafting. Your team answers questions and stays the trusted advisor.' },
