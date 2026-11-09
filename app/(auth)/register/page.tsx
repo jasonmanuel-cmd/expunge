@@ -16,8 +16,9 @@ export default async function RegisterPage({
   const firm = code ? await getFirmByInviteCode(code) : null
   const inviteCode = firm ? code : null
 
-  const wantsFirm = one(params.role) === 'partner' || one(params.plan) === 'partner'
-  const initialRole = !inviteCode && wantsFirm ? 'partner' : 'consumer'
+  // Expunge is sold only to firms. Without a valid invite, the only account
+  // anyone can create is a firm account; clients join through their firm's link.
+  const initialRole = inviteCode ? 'consumer' : 'partner'
 
   return (
     <RegisterForm

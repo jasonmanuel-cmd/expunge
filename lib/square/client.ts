@@ -1,3 +1,4 @@
+import type { FirmBillingKey } from '@/lib/pricing'
 import { SquareClient, SquareEnvironment } from 'square'
 
 export const squareClient = new SquareClient({
@@ -10,75 +11,16 @@ export const squareClient = new SquareClient({
 
 export const LOCATION_ID = process.env.SQUARE_LOCATION_ID!
 
-export const PLAN_IDS = {
-  basic:   process.env.SQUARE_PLAN_BASIC_ID!,
-  pro:     process.env.SQUARE_PLAN_PRO_ID!,
-  partner: process.env.SQUARE_PLAN_PARTNER_ID!,
-} as const
+/**
+ * Square plan variation ids for the only things that can be bought: firm plans.
+ * There are no consumer plans. Prices and copy live in lib/pricing.ts.
+ *   SQUARE_PLAN_PARTNER_ID      monthly firm plan
+ *   SQUARE_PLAN_FIRM_ANNUAL_ID  yearly flat license (optional; without it the
+ *                               annual license is sold by invoice only)
+ */
+export const PLAN_IDS: Record<FirmBillingKey, string | undefined> = {
+  partner: process.env.SQUARE_PLAN_PARTNER_ID || undefined,
+  partner_annual: process.env.SQUARE_PLAN_FIRM_ANNUAL_ID || undefined,
+}
 
-export type PlanKey = keyof typeof PLAN_IDS
-
-export const PLANS = {
-  free: {
-    name: 'Free',
-    price: 0,
-    priceLabel: '$0/mo',
-    description: 'Try it out',
-    features: [
-      '1 credit report',
-      'Up to 3 items disputed',
-      'Single bureau',
-      'AI letter generation',
-    ],
-    limit: { cases: 1, items: 3, triBureau: false, escalation: false },
-    cta: 'Get started free',
-    highlighted: false,
-  },
-  basic: {
-    name: 'Basic',
-    price: 4999,
-    priceLabel: '$49.99/mo',
-    description: 'For individuals starting their journey',
-    features: [
-      'Up to 5 reports, 15 items each',
-      'All 3 bureaus',
-      'AI analysis + agents',
-      '30-day follow-up tracking',
-      'Priority support',
-    ],
-    limit: { cases: 5, items: 15, triBureau: true, escalation: false },
-    cta: 'Choose Basic',
-    highlighted: false,
-  },
-  pro: {
-    name: 'Pro',
-    price: 9999,
-    priceLabel: '$99.99/mo',
-    description: 'Your whole report, reviewed',
-    features: [
-      'Every item on your report',
-      'All 3 bureaus',
-      'Full AI agent suite',
-      '30-day follow-up tracking + escalation',
-      'Dedicated support',
-    ],
-    limit: { cases: 999, items: 999, triBureau: true, escalation: true },
-    cta: 'Choose Pro',
-    highlighted: true,
-  },
-  partner: {
-    name: 'Partner',
-    price: 29999,
-    priceLabel: '$299.99/mo',
-    description: 'For tax and finance firms',
-    features: [
-      'Everything in Pro for every client you invite',
-      'Your firm name and logo',
-      'Client dashboard',
-      'One flat monthly price',
-    ],
-    limit: { cases: 999, items: 999, triBureau: true, escalation: true },
-    cta: 'Choose Partner',
-    highlighted: false,
-  },
-} as const
+export type PlanKey = FirmBillingKey

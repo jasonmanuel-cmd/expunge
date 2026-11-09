@@ -13,12 +13,12 @@ export default function PrivacyPage() {
 
       <div className="max-w-3xl mx-auto px-8 py-16">
         <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
-        <p className="text-[#6B7280] text-sm mb-10">Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <p className="text-[#6B7280] text-sm mb-10">Last updated: November 9, 2026</p>
 
         {[
           {
             title: 'Information We Collect',
-            body: 'We collect: (a) Account information (name, email, password hash); (b) Credit report content you submit for dispute analysis; (c) Dispute history and outcomes; (d) Payment information processed by Square (we do not store raw card numbers); (e) Usage data and logs.',
+            body: 'We collect: (a) Account information (name, email, password hash); (b) Credit report content you submit for dispute analysis; (c) Dispute history and outcomes; (d) For firm accounts only, payment information processed by Square (we do not store raw card numbers; individuals never pay Expunge); (e) Usage data and logs.',
           },
           {
             title: 'How We Use Your Information',
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           },
           {
             title: 'Data Sharing',
-            body: 'We do not sell your personal data. We share data only with: (a) Supabase (database hosting); (b) OpenAI (AI processing — data subject to their privacy policy); (c) Square (payment processing); (d) Law enforcement when legally required. All processors are bound by data processing agreements.',
+            body: 'We do not sell your personal data. We share data only with: (a) the firm that invited you, which can see your name, email and the status of your disputes in its firm dashboard; (b) Supabase (database hosting); (c) OpenAI (AI processing — data subject to their privacy policy); (d) Square (payment processing for firm accounts); (e) Law enforcement when legally required. All processors are bound by data processing agreements.',
           },
           {
             title: 'Data Security',

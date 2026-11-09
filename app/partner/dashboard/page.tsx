@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
-import { PLANS } from '@/lib/square/client'
+import { FIRM_MONTHLY, FIRM_ANNUAL } from '@/lib/pricing'
 import { isFirmPlanActive } from '@/lib/partner/firm'
 import FirmSettingsForm from './FirmSettingsForm'
 
@@ -42,10 +42,13 @@ export default async function PartnerDashboardPage() {
 
   const { data: sub } = await supabase
     .from('subscriptions')
-    .select('plan, status')
+    .select('plan, status, current_period_end, square_subscription_id')
     .eq('user_id', user.id)
     .maybeSingle()
-  const planActive = isFirmPlanActive(sub?.plan, sub?.status)
+  const planActive = isFirmPlanActive(sub?.plan, sub?.status, {
+    periodEnd: sub?.current_period_end,
+    squareSubscriptionId: sub?.square_subscription_id,
+  })
 
   const { data: settings } = await supabase
     .from('partner_settings')
@@ -79,19 +82,24 @@ export default async function PartnerDashboardPage() {
         {planActive ? (
           <div className="mb-6 bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl p-5 text-sm">
             <span className="font-semibold text-[#16A34A]">Firm plan active.</span>{' '}
-            Every client who joins with your invite link gets full Pro access at no cost to them.
+            Every client who joins with your invite link gets full access. Clients never pay Expunge.
           </div>
         ) : (
           <div className="mb-6 bg-gradient-to-r from-[#F97316] to-[#EA580C] rounded-2xl p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-orange-200">
             <div>
               <div className="font-bold text-lg">Start your firm plan</div>
               <div className="text-white/80 text-sm mt-0.5">
-                {PLANS.partner.priceLabel} covers all your clients. Until it&apos;s active, clients who join stay on the free tier.
+                {FIRM_MONTHLY.priceLabel} or {FIRM_ANNUAL.priceLabel} covers all your clients. Until a plan is active, clients who join can sign in but can&apos;t start a review.
               </div>
             </div>
-            <Link href="/checkout?plan=partner" className="bg-white text-[#F97316] hover:bg-orange-50 transition font-bold px-6 py-3 rounded-xl text-sm whitespace-nowrap shadow-md">
-              Start firm plan →
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Link href="/checkout?plan=partner" className="bg-white text-[#F97316] hover:bg-orange-50 transition font-bold px-6 py-3 rounded-xl text-sm whitespace-nowrap shadow-md text-center">
+                Start monthly →
+              </Link>
+              <Link href="/checkout?plan=partner_annual" className="border border-white/40 hover:bg-white/10 transition font-bold px-6 py-3 rounded-xl text-sm whitespace-nowrap text-center">
+                Annual license
+              </Link>
+            </div>
           </div>
         )}
 

@@ -165,7 +165,7 @@ export default function UploadPage() {
     const over = orchResult.itemsOverLimit ?? 0
     setStatusMsg(
       over > 0
-        ? `Letters ready for ${orchResult.itemCount} items. ${over} more found; upgrade your plan to dispute them too.`
+        ? `Letters ready for ${orchResult.itemCount} items. ${over} more found beyond this account's limit.`
         : `Letters ready for ${orchResult.itemCount} items.`
     )
     setTimeout(() => router.push('/dashboard'), over > 0 ? 4000 : 1500)

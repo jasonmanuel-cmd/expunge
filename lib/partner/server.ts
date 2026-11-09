@@ -24,15 +24,18 @@ export async function getFirmByInviteCode(code: string): Promise<FirmBranding | 
   return { partnerId: data.partner_id, firmName: data.firm_name, logoUrl: data.logo_url }
 }
 
-/** Whether a firm's own subscription is an active Partner plan. */
+/** Whether a firm's own subscription is an active firm plan (monthly, annual or invoiced). */
 export async function isFirmActive(partnerId: string): Promise<boolean> {
   const supabase = createServiceClient()
   const { data } = await supabase
     .from('subscriptions')
-    .select('plan, status')
+    .select('plan, status, current_period_end, square_subscription_id')
     .eq('user_id', partnerId)
     .maybeSingle()
-  return isFirmPlanActive(data?.plan, data?.status)
+  return isFirmPlanActive(data?.plan, data?.status, {
+    periodEnd: data?.current_period_end,
+    squareSubscriptionId: data?.square_subscription_id,
+  })
 }
 
 /** The firm a client was invited by, if any (earliest link wins). */

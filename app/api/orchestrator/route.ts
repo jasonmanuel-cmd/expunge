@@ -88,10 +88,17 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Expunge is only available through a firm plan; there is no consumer tier.
+    const plan = await getUserPlan(user.id)
+    if (!plan.isActive) {
+      return NextResponse.json(
+        { error: 'Your account isn\'t covered by a firm plan right now. Ask the firm that invited you.', code: 'NOT_COVERED' },
+        { status: 402 }
+      )
+    }
+
     ownedCaseId = caseId
     await supabase.from('cases').update({ status: 'analyzing' }).eq('id', caseId)
-
-    const plan = await getUserPlan(user.id)
 
     // Step 1: Master Orchestrator
     const orchestratorOutput = await runOrchestrator(caseData.credit_report_text)

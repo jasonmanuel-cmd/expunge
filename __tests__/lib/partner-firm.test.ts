@@ -65,6 +65,18 @@ describe('isFirmPlanActive', () => {
     expect(isFirmPlanActive('pro', 'active')).toBe(false)
     expect(isFirmPlanActive(undefined, undefined)).toBe(false)
   })
+
+  it('expires an invoiced license on its period end', () => {
+    const now = new Date('2026-11-09T00:00:00Z')
+    expect(isFirmPlanActive('partner', 'active', { periodEnd: '2027-11-09T00:00:00Z', squareSubscriptionId: null, now })).toBe(true)
+    expect(isFirmPlanActive('partner', 'active', { periodEnd: '2026-11-01T00:00:00Z', squareSubscriptionId: null, now })).toBe(false)
+  })
+
+  it('leaves Square-billed plans to the webhook, whatever the period end says', () => {
+    const now = new Date('2026-11-09T00:00:00Z')
+    expect(isFirmPlanActive('partner', 'active', { periodEnd: '2026-11-01T00:00:00Z', squareSubscriptionId: 'sq_123', now })).toBe(true)
+    expect(isFirmPlanActive('partner', 'active', { periodEnd: null, squareSubscriptionId: null, now })).toBe(true)
+  })
 })
 
 describe('resolveEffectivePlan', () => {

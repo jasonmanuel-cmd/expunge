@@ -46,14 +46,32 @@ export function normalizeLogoUrl(raw: unknown): string | null {
 
 export type OwnPlan = 'free' | 'basic' | 'pro' | 'partner'
 
-/** True when a subscription row gives the firm an active Partner plan. */
-export function isFirmPlanActive(plan: string | null | undefined, status: string | null | undefined): boolean {
-  return plan === 'partner' && (status === 'active' || status === 'trialing')
+/**
+ * True when a subscription row gives the firm an active firm plan.
+ *
+ * A firm can pay by Square subscription (monthly or yearly) or by invoice. An
+ * invoiced license has no Square subscription, so nothing would ever mark it
+ * expired; it is active only until its current_period_end. Rows paid through
+ * Square are kept current by the webhook, so their period end is not checked.
+ */
+export function isFirmPlanActive(
+  plan: string | null | undefined,
+  status: string | null | undefined,
+  license?: { periodEnd?: string | null; squareSubscriptionId?: string | null; now?: Date },
+): boolean {
+  if (plan !== 'partner' || (status !== 'active' && status !== 'trialing')) return false
+  if (license && !license.squareSubscriptionId && license.periodEnd) {
+    const end = new Date(license.periodEnd)
+    if (!Number.isNaN(end.getTime()) && end.getTime() < (license.now ?? new Date()).getTime()) return false
+  }
+  return true
 }
 
 /**
- * The plan a client actually gets. A client's own paid plan wins; otherwise a
- * client whose firm has an active Partner plan gets Pro features, paid by the firm.
+ * The plan a client actually gets. Clients never pay Expunge: a client whose
+ * firm has an active firm plan gets full features, paid by the firm. A paid
+ * plan of their own only exists on accounts from before the firms-only change
+ * (retired Basic/Pro) and is honored until it ends.
  */
 export function resolveEffectivePlan(input: {
   ownPlan: OwnPlan

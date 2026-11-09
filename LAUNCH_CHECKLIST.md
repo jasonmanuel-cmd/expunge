@@ -30,37 +30,28 @@ under Authentication → Password.
 
 ---
 
-## BLOCKER #2: Square Production — ✅ CONFIRMED (operator)
+## BLOCKER #2: Square Production (firms-only plans, Nov 9 2026)
 
-Operator confirms the 3 production subscription plans, production credentials,
-and the webhook are configured in Vercel production env. Reference steps below
-retained for reference / re-setup.
+Expunge is sold only to businesses. The old consumer plans (Basic, Pro) are
+retired: don't create them, and the app no longer reads their env vars.
 
 1. Log in to https://squareup.com/dashboard
 2. Go to Subscriptions → Plans → Create Plan
-3. Create 3 plans:
+3. Create the firm plans (amounts must match `lib/pricing.ts`):
 
-   **Basic Plan**
-   - Name: Expunge Basic
-   - Price: $49.00/month
-   - Description: For individuals starting credit repair
-
-   **Pro Plan**
-   - Name: Expunge Pro
-   - Price: $99.00/month
-   - Description: Maximum firepower for serious credit repair
-
-   **Partner Plan**
-   - Name: Expunge Partner
+   **Firm Monthly**
+   - Name: Expunge Firm Monthly
    - Price: $299.00/month
-   - Description: For credit repair agencies
+
+   **Annual License** (optional; without it the annual license is sold by invoice)
+   - Name: Expunge Annual License
+   - Price: $2,990.00/year
 
 4. For each plan, copy the **Plan Variation ID** (looks like `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
 5. Update Vercel env vars:
    ```
-   vercel env add SQUARE_PLAN_BASIC_ID production
-   vercel env add SQUARE_PLAN_PRO_ID production
-   vercel env add SQUARE_PLAN_PARTNER_ID production
+   vercel env add SQUARE_PLAN_PARTNER_ID production       # Firm Monthly
+   vercel env add SQUARE_PLAN_FIRM_ANNUAL_ID production   # Annual License (optional)
    ```
 6. Switch to production:
    - Update `NEXT_PUBLIC_SQUARE_ENVIRONMENT` from `sandbox` to `production`
@@ -146,9 +137,8 @@ Once all blockers are resolved, test this flow:
 | SQUARE_ACCESS_TOKEN | EAAAl0... | PRODUCTION value |
 | SQUARE_LOCATION_ID | LX0ECCYXXZYWS | PRODUCTION value |
 | NEXT_PUBLIC_SQUARE_ENVIRONMENT | sandbox | **production** |
-| SQUARE_PLAN_BASIC_ID | placeholder | **REAL PLAN ID** |
-| SQUARE_PLAN_PRO_ID | placeholder | **REAL PLAN ID** |
-| SQUARE_PLAN_PARTNER_ID | placeholder | **REAL PLAN ID** |
+| SQUARE_PLAN_PARTNER_ID | placeholder | **REAL PLAN ID** (Firm Monthly) |
+| SQUARE_PLAN_FIRM_ANNUAL_ID | placeholder | REAL PLAN ID (Annual License, optional) |
 | SQUARE_WEBHOOK_SIGNATURE_KEY | placeholder | PRODUCTION value |
 | NEXT_PUBLIC_APP_URL | http://localhost:3000 | **https://yourdomain.com** |
 | CRON_SECRET | 5226ee... | set in Vercel |
