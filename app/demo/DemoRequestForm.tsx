@@ -5,7 +5,7 @@ import { useState } from 'react'
 /**
  * Demo request form. It sends nothing from the site: on submit it opens the
  * visitor's own email app with the details filled in, addressed to `to`.
- * Swap this for a stored lead (Supabase table + API route) when one exists.
+ * Swap this for a stored lead (database table + API route) when one exists.
  */
 export default function DemoRequestForm({
   to,

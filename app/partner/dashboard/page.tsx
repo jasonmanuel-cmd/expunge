@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { q, q1 } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
@@ -18,40 +19,47 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default async function PartnerDashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getSessionUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  const profile = await q1<{ role: string; full_name: string | null }>(
+    `select role, full_name from profiles where id = $1`,
+    [user.id]
+  )
 
   if (profile?.role !== 'partner') redirect('/dashboard')
 
-  const { data: clients } = await supabase
-    .from('partner_clients')
-    .select(`
-      consumer_id,
-      created_at,
-      profiles!partner_clients_consumer_id_fkey(full_name, email),
-      cases:cases!cases_user_id_fkey(
-        id, status, created_at,
-        dispute_items(id, status)
-      )
-    `)
-    .eq('partner_id', user.id)
-    // Seats go to clients in the order they joined.
-    .order('created_at', { ascending: true })
+  // Only this firm's own clients, and only their cases.
+  const clients = await q<{
+    consumer_id: string
+    created_at: string
+    profiles: { full_name: string; email: string } | null
+    cases: Array<{ id: string; status: string; created_at: string; dispute_items: Array<{ id: string; status: string }> }>
+  }>(
+    `select pc.consumer_id, pc.created_at,
+            json_build_object('full_name', p.full_name, 'email', p.email) as profiles,
+            coalesce((
+              select json_agg(json_build_object(
+                       'id', c.id, 'status', c.status, 'created_at', c.created_at,
+                       'dispute_items', coalesce((
+                         select json_agg(json_build_object('id', di.id, 'status', di.status))
+                           from dispute_items di where di.case_id = c.id), '[]'::json))
+                     order by c.created_at desc)
+                from cases c where c.user_id = pc.consumer_id), '[]'::json) as cases
+       from partner_clients pc
+       join profiles p on p.id = pc.consumer_id
+      where pc.partner_id = $1
+      -- Seats go to clients in the order they joined.
+      order by pc.created_at asc`,
+    [user.id]
+  )
 
   const { active: planActive, seatLimit } = await getFirmPlanState(user.id)
 
-  const { data: settings } = await supabase
-    .from('partner_settings')
-    .select('firm_name, logo_url, invite_code')
-    .eq('partner_id', user.id)
-    .maybeSingle()
+  const settings = await q1<{ firm_name: string; logo_url: string | null; invite_code: string }>(
+    `select firm_name, logo_url, invite_code from partner_settings where partner_id = $1`,
+    [user.id]
+  )
   const firmName = settings?.firm_name ?? ''
 
   const totalClients = clients?.length ?? 0

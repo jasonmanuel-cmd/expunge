@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { SESSION_COOKIE, userForSessionToken } from '@/lib/auth'
 
 // Paths that require authentication
 const PROTECTED_PATHS = [
@@ -11,51 +11,26 @@ const PROTECTED_PATHS = [
   '/partner',
 ]
 
-// Paths that should redirect to dashboard if already logged in
-const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/reset-password']
+// Paths that should redirect to dashboard if already logged in.
+// (/reset-password is not here: a reset link must work even while signed in.)
+const AUTH_PATHS = ['/login', '/register', '/forgot-password']
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: { headers: request.headers },
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options })
-          response = NextResponse.next({ request: { headers: request.headers } })
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: '', ...options })
-          response = NextResponse.next({ request: { headers: request.headers } })
-          response.cookies.set({ name, value: '', ...options })
-        },
-      },
-    }
-  )
-
   const pathname = request.nextUrl.pathname
 
-  // Safety net: if a confirmation / OAuth link lands anywhere other than the
-  // callback with a ?code (e.g. Supabase Site URL points at "/"), forward it
-  // to /auth/callback so the session can still be exchanged.
-  const code = request.nextUrl.searchParams.get('code')
-  if (code && pathname !== '/auth/callback') {
-    const callbackUrl = new URL('/auth/callback', request.url)
-    callbackUrl.searchParams.set('code', code)
-    const next = request.nextUrl.searchParams.get('next')
-    if (next) callbackUrl.searchParams.set('next', next)
-    return NextResponse.redirect(callbackUrl)
-  }
+  // Only look up the session where it matters (protected and auth pages).
+  const needsUser =
+    PROTECTED_PATHS.some((p) => pathname.startsWith(p)) || AUTH_PATHS.some((p) => pathname.startsWith(p))
+  if (!needsUser) return response
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await userForSessionToken(request.cookies.get(SESSION_COOKIE)?.value).catch((err) => {
+    console.error('[proxy] session lookup failed:', err)
+    return null
+  })
 
   // Redirect authenticated users away from auth pages
   if (user && AUTH_PATHS.some((p) => pathname.startsWith(p))) {
@@ -78,13 +53,7 @@ export async function proxy(request: NextRequest) {
 
   // Role-based access: partner routes
   if (pathname.startsWith('/partner') && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role !== 'partner' && profile?.role !== 'admin') {
+    if (user.role !== 'partner' && user.role !== 'admin') {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }

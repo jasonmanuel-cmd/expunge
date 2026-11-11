@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { q, q1 } from '@/lib/db'
 import { normalizeInviteCode } from '@/lib/partner/firm'
 import { getFirmByInviteCode, getFirmSeats } from '@/lib/partner/server'
 
@@ -13,8 +14,7 @@ import { getFirmByInviteCode, getFirmSeats } from '@/lib/partner/server'
  */
 export async function POST(req: NextRequest) {
   try {
-    const authClient = await createClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json().catch(() => ({})) as { code?: unknown }
@@ -24,23 +24,15 @@ export async function POST(req: NextRequest) {
     const firm = await getFirmByInviteCode(code)
     if (!firm) return NextResponse.json({ error: 'That invite link is not valid.' }, { status: 404 })
 
-    const supabase = createServiceClient()
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-    if (profile?.role !== 'consumer') {
+    if (user.role !== 'consumer') {
       return NextResponse.json({ error: 'Firm accounts cannot join another firm.' }, { status: 403 })
     }
 
     // One firm per client: keep an existing link rather than switching firms.
-    const { data: existing } = await supabase
-      .from('partner_clients')
-      .select('partner_id')
-      .eq('consumer_id', user.id)
-      .limit(1)
-      .maybeSingle()
+    const existing = await q1<{ partner_id: string }>(
+      `select partner_id from partner_clients where consumer_id = $1 limit 1`,
+      [user.id]
+    )
 
     if (existing && existing.partner_id !== firm.partnerId) {
       return NextResponse.json({ error: 'Your account is already linked to another firm.' }, { status: 409 })
@@ -55,10 +47,10 @@ export async function POST(req: NextRequest) {
           { status: 409 }
         )
       }
-      const { error } = await supabase
-        .from('partner_clients')
-        .insert({ partner_id: firm.partnerId, consumer_id: user.id })
-      if (error) throw error
+      await q(
+        `insert into partner_clients (partner_id, consumer_id) values ($1, $2) on conflict do nothing`,
+        [firm.partnerId, user.id]
+      )
     }
 
     return NextResponse.json({ linked: true, firmName: firm.firmName })

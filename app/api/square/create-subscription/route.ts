@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { squareClient, LOCATION_ID, PLAN_IDS } from '@/lib/square/client'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { insert, q1 } from '@/lib/db'
 import { isFirmBillingKey, seatsForBillingKey } from '@/lib/pricing'
 
 // Only firms can pay Expunge. Consumers (including firm-invited clients) can
@@ -9,8 +10,7 @@ import { isFirmBillingKey, seatsForBillingKey } from '@/lib/pricing'
 export async function POST(req: NextRequest) {
   try {
     // Verify authenticated user
-    const authClient = await createClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    const user = await getSessionUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -32,23 +32,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'This plan is not available for card checkout yet.' }, { status: 400 })
     }
 
-    const supabase = createServiceClient()
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single()
-    if (profile?.role !== 'partner' && profile?.role !== 'admin') {
+    if (user.role !== 'partner' && user.role !== 'admin') {
       return NextResponse.json({ error: 'Only firm accounts can subscribe.' }, { status: 403 })
     }
 
     // Check if Square customer already exists for this user
-    const { data: existingSub } = await supabase
-      .from('subscriptions')
-      .select('square_customer_id, square_subscription_id')
-      .eq('user_id', userId)
-      .single()
+    const existingSub = await q1<{ square_customer_id: string | null; square_subscription_id: string | null }>(
+      `select square_customer_id, square_subscription_id from subscriptions where user_id = $1`,
+      [userId]
+    )
 
     let customerId = existingSub?.square_customer_id
 
@@ -92,15 +84,15 @@ export async function POST(req: NextRequest) {
     const oldSubId = existingSub?.square_subscription_id
     if (oldSubId && oldSubId !== squareSubId) {
       try {
-        await squareClient.subscriptions.cancel(oldSubId)
+        await squareClient.subscriptions.cancel({ subscriptionId: oldSubId })
       } catch (cancelErr) {
         console.error('Plan change: could not cancel old subscription', oldSubId, cancelErr)
       }
     }
 
-    // Persist to Supabase. Monthly and annual both grant the one firm plan.
+    // Save it. Monthly and annual both grant the one firm plan.
     const annual = planKey === 'partner_annual'
-    await supabase.from('subscriptions').upsert({
+    await insert('subscriptions', {
       user_id: userId,
       plan: 'partner',
       status: 'active',
@@ -113,16 +105,18 @@ export async function POST(req: NextRequest) {
         : new Date(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate())
       ).toISOString(),
       cancel_at_period_end: false,
-    }, { onConflict: 'user_id' })
-
-    // Save the plan's client seats. Kept as a separate write so checkout still
-    // works on a database where migration 010 (client_seats) hasn't run yet;
-    // such a firm gets the default seat count until it does.
-    const { error: seatsError } = await supabase
-      .from('subscriptions')
-      .update({ client_seats: seatsForBillingKey(planKey) })
-      .eq('user_id', userId)
-    if (seatsError) console.error('Could not save client seats for', userId, seatsError.message)
+      client_seats: seatsForBillingKey(planKey),
+    }, {
+      onConflict: `on conflict (user_id) do update set
+        plan = excluded.plan, status = excluded.status,
+        square_customer_id = excluded.square_customer_id,
+        square_subscription_id = excluded.square_subscription_id,
+        square_card_id = excluded.square_card_id,
+        current_period_start = excluded.current_period_start,
+        current_period_end = excluded.current_period_end,
+        cancel_at_period_end = excluded.cancel_at_period_end,
+        client_seats = excluded.client_seats`,
+    })
 
     return NextResponse.json({ success: true, plan: planKey })
   } catch (err) {

@@ -74,3 +74,52 @@ export async function sendNoResponseEmail(
     console.error('[Email] Failed to send no-response notification:', err)
   }
 }
+
+/**
+ * Sign-in emails (confirm address, reset password). These replace the emails
+ * Supabase Auth used to send. Returns false when the email could not be sent,
+ * so the caller can tell the user instead of failing silently.
+ */
+export function canSendAuthEmail(): boolean {
+  return !!resend
+}
+
+export async function sendConfirmEmail(to: string, link: string): Promise<boolean> {
+  if (!isConfigured()) return false
+  try {
+    const { error } = await resend!.emails.send({
+      from: FROM,
+      to,
+      subject: `Confirm your ${BRAND.name} account`,
+      text: `Welcome to ${BRAND.name}.\n\nConfirm your email address to finish creating your account:\n${link}\n\nThis link works once and expires in 24 hours. If you didn't sign up, you can ignore this email.\n\n— ${BRAND.name}`,
+    })
+    if (error) {
+      console.error('[Email] Confirm email rejected:', error)
+      return false
+    }
+    return true
+  } catch (err) {
+    console.error('[Email] Failed to send confirm email:', err)
+    return false
+  }
+}
+
+export async function sendPasswordResetEmail(to: string, link: string): Promise<boolean> {
+  if (!isConfigured()) return false
+  try {
+    const { error } = await resend!.emails.send({
+      from: FROM,
+      to,
+      subject: `Reset your ${BRAND.name} password`,
+      text: `Someone asked to reset the password for this ${BRAND.name} account.\n\nSet a new password here:\n${link}\n\nThis link works once and expires in 1 hour. If you didn't ask for this, you can ignore this email and your password stays the same.\n\n— ${BRAND.name}`,
+    })
+    if (error) {
+      console.error('[Email] Reset email rejected:', error)
+      return false
+    }
+    return true
+  } catch (err) {
+    console.error('[Email] Failed to send reset email:', err)
+    return false
+  }
+}

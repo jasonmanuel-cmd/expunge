@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
-import { createServiceClient } from '@/lib/supabase/server'
+import { update } from '@/lib/db'
 import { resolveWebhookUpdate } from '@/lib/square/webhook'
 
 // Square sends webhook events — we verify signature then update subscription state
@@ -25,16 +25,11 @@ export async function POST(req: NextRequest) {
     }
 
     const event = JSON.parse(body)
-    const update = resolveWebhookUpdate(event)
-    if (!update) return NextResponse.json({ received: true })
+    const change = resolveWebhookUpdate(event)
+    if (!change) return NextResponse.json({ received: true })
 
-    const supabase = createServiceClient()
-    const { error } = await supabase
-      .from('subscriptions')
-      .update(update.fields)
-      .eq('square_subscription_id', update.squareSubscriptionId)
-    // A non-2xx reply makes Square retry the event later.
-    if (error) throw error
+    // A thrown error returns 500, which makes Square retry the event later.
+    await update('subscriptions', change.fields, { square_subscription_id: change.squareSubscriptionId })
 
     return NextResponse.json({ received: true })
   } catch (err) {

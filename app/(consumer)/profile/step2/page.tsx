@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { getMyProfileAction, updateMyProfileAction } from '@/app/(consumer)/profile/actions'
 import ExpungeLogo from '@/components/ExpungeLogo'
 
 export default function ProfileStep2Page() {
@@ -20,19 +20,12 @@ export default function ProfileStep2Page() {
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
+    getMyProfileAction().then((profile) => {
+      if (!profile) {
         router.push('/login')
         return
       }
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, address_line1, address_line2, city, state, zip_code, ssn_last4, date_of_birth')
-        .eq('id', user.id)
-        .single()
-
-      if (profile) {
+      {
         setFullName(profile.full_name || '')
         setAddressLine1(profile.address_line1 || '')
         setAddressLine2(profile.address_line2 || '')
@@ -51,29 +44,23 @@ export default function ProfileStep2Page() {
     setSaving(true)
     setError('')
 
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+    const { error: updateError } = await updateMyProfileAction({
+      full_name: fullName,
+      address_line1: addressLine1,
+      address_line2: addressLine2 || null,
+      city,
+      state,
+      zip_code: zipCode,
+      ssn_last4: ssnLast4,
+      date_of_birth: dateOfBirth,
+    })
+
+    if (updateError === 'Please log in again.') {
       router.push('/login')
       return
     }
-
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({
-        full_name: fullName,
-        address_line1: addressLine1,
-        address_line2: addressLine2 || null,
-        city,
-        state,
-        zip_code: zipCode,
-        ssn_last4: ssnLast4,
-        date_of_birth: dateOfBirth,
-      })
-      .eq('id', user.id)
-
     if (updateError) {
-      setError(updateError.message)
+      setError(updateError)
       setSaving(false)
       return
     }

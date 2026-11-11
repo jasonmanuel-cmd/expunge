@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { insert } from '@/lib/db'
 import { assertPlanLimit } from '@/lib/square/subscription'
 
 /**
@@ -16,8 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     // The case belongs to the signed-in user, never to a userId the client sends.
-    const authClient = await createClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    const user = await getSessionUser()
     if (!user) {
       return NextResponse.json({ error: 'Please log in again.' }, { status: 401 })
     }
@@ -110,16 +110,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No text could be extracted from the file. Please make sure it contains readable text.' }, { status: 400 })
     }
 
-    // Create case in Supabase
-    const supabase = createServiceClient()
-    const { data: newCase, error: caseError } = await supabase
-      .from('cases')
-      .insert({ user_id: userId, credit_report_text: extractedText, status: 'analyzing', source_file: file.name })
-      .select()
-      .single()
-
-    if (caseError || !newCase) {
+    // Create the case
+    let newCase: { id: string } | undefined
+    try {
+      ;[newCase] = await insert<{ id: string }>('cases', {
+        user_id: userId,
+        credit_report_text: extractedText,
+        status: 'analyzing',
+        source_file: file.name,
+      })
+    } catch (caseError) {
       console.error('Case creation error:', caseError)
+    }
+    if (!newCase) {
       return NextResponse.json({ error: 'Failed to create case. Please try again.' }, { status: 500 })
     }
 

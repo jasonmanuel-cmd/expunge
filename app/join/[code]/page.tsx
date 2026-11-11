@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
-import { createClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { q1 } from '@/lib/db'
 import { normalizeInviteCode } from '@/lib/partner/firm'
 import { getFirmByInviteCode, getFirmSeats } from '@/lib/partner/server'
 import JoinButton from './JoinButton'
@@ -12,19 +13,16 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
   const code = normalizeInviteCode(rawCode)
   const firm = code ? await getFirmByInviteCode(code) : null
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getSessionUser()
 
   // A client already linked to this firm keeps their seat; anyone else needs
   // an open one.
-  const { data: ownLink } = firm && user
-    ? await supabase
-        .from('partner_clients')
-        .select('partner_id')
-        .eq('consumer_id', user.id)
-        .eq('partner_id', firm.partnerId)
-        .maybeSingle()
-    : { data: null }
+  const ownLink = firm && user
+    ? await q1(
+        `select partner_id from partner_clients where consumer_id = $1 and partner_id = $2`,
+        [user.id, firm.partnerId]
+      )
+    : null
   const seats = firm && !ownLink ? await getFirmSeats(firm.partnerId) : null
 
   return (

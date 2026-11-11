@@ -8,7 +8,7 @@ accounts and keys. Customer data never mixes between licensees.
 | Service | What for |
 | --- | --- |
 | Vercel project | Hosts the app and runs the daily cron |
-| Supabase project | Database, auth, row-level security |
+| Neon project | Postgres database (users, sign-in sessions, cases, billing) |
 | Square account | Subscription plans and card payments |
 | OpenAI API key | Report analysis and letter drafting |
 | Resend account + verified domain | Transactional email |
@@ -16,7 +16,7 @@ accounts and keys. Customer data never mixes between licensees.
 ## Setup
 
 1. Fork or copy this repo and create a Vercel project from it.
-2. Create a Supabase project and run every file in `supabase/migrations/` in order (001 to 009).
+2. Create a Neon project and run `db/schema.sql` once (Neon SQL editor, or `psql "$DATABASE_URL" -f db/schema.sql`).
 3. In Square, create the firm plan variations (Firm Monthly, and optionally a yearly Annual License; amounts in `lib/pricing.ts`) and a webhook pointing to `https://<your-domain>/api/square/webhook` with these events: `subscription.created`, `subscription.updated`, `invoice.payment_made`, `invoice.scheduled_charge_failed`.
 4. Verify your sending domain in Resend.
 5. Set the environment variables below in Vercel and deploy.
@@ -25,7 +25,7 @@ accounts and keys. Customer data never mixes between licensees.
 
 Required:
 
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- `DATABASE_URL` (Neon pooled connection string)
 - `NEXT_PUBLIC_APP_URL` (must match the Square webhook URL's domain)
 - `SQUARE_ACCESS_TOKEN`, `SQUARE_LOCATION_ID`, `NEXT_PUBLIC_SQUARE_ENVIRONMENT` (`production` or sandbox)
 - `SQUARE_PLAN_PARTNER_ID` (Firm Monthly)

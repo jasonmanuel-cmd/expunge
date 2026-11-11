@@ -1,5 +1,6 @@
 import { BRAND } from '@/lib/brand'
-import { createClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { q1 } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FIRM_MONTHLY, FIRM_ANNUAL, FIRM_CUSTOM, PLAN_DISPLAY_NAMES } from '@/lib/pricing'
@@ -28,13 +29,18 @@ const STATUS_COLORS: Record<string, string> = {
  * plan (Basic/Pro) can only cancel it.
  */
 export default async function BillingPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getSessionUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: sub }] = await Promise.all([
-    supabase.from('profiles').select('role').eq('id', user.id).single(),
-    supabase.from('subscriptions').select('*').eq('user_id', user.id).single(),
+  const [profile, sub] = await Promise.all([
+    q1<{ role: string }>(`select role from profiles where id = $1`, [user.id]),
+    q1<{
+      plan: string
+      status: string
+      current_period_end: string | null
+      square_subscription_id: string | null
+      cancel_at_period_end: boolean | null
+    }>(`select *, plan::text as plan, status::text as status from subscriptions where user_id = $1`, [user.id]),
   ])
 
   const isFirm = profile?.role === 'partner' || profile?.role === 'admin'

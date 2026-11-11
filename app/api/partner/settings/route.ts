@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { q1 } from '@/lib/db'
 import { generateInviteCode, normalizeFirmName, normalizeLogoUrl } from '@/lib/partner/firm'
 
 /**
@@ -9,17 +10,10 @@ import { generateInviteCode, normalizeFirmName, normalizeLogoUrl } from '@/lib/p
  */
 export async function POST(req: NextRequest) {
   try {
-    const authClient = await createClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const supabase = createServiceClient()
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-    if (profile?.role !== 'partner') {
+    if (user.role !== 'partner') {
       return NextResponse.json({ error: 'Only firm accounts can do this.' }, { status: 403 })
     }
 
@@ -33,24 +27,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Logo must be an https:// image link, or left blank.' }, { status: 400 })
     }
 
-    const { data: existing } = await supabase
-      .from('partner_settings')
-      .select('invite_code')
-      .eq('partner_id', user.id)
-      .maybeSingle()
-
-    const { data: saved, error } = await supabase
-      .from('partner_settings')
-      .upsert({
-        partner_id: user.id,
-        firm_name: firmName,
-        logo_url: logoUrl || null,
-        invite_code: existing?.invite_code ?? generateInviteCode(),
-      }, { onConflict: 'partner_id' })
-      .select('firm_name, logo_url, invite_code')
-      .single()
-
-    if (error || !saved) throw error ?? new Error('Save failed')
+    // The invite code is made once and never changes on later saves.
+    const saved = await q1<{ firm_name: string; logo_url: string | null; invite_code: string }>(
+      `insert into partner_settings (partner_id, firm_name, logo_url, invite_code)
+       values ($1, $2, $3, $4)
+       on conflict (partner_id) do update
+         set firm_name = excluded.firm_name, logo_url = excluded.logo_url
+       returning firm_name, logo_url, invite_code`,
+      [user.id, firmName, logoUrl || null, generateInviteCode()]
+    )
+    if (!saved) throw new Error('Save failed')
 
     return NextResponse.json({
       firmName: saved.firm_name,
