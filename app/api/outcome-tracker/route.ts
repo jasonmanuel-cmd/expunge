@@ -1,14 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { insert, q, q1, tx, update } from '@/lib/db'
+import { isUuid } from '@/lib/ids'
 import { processOutcome } from '@/lib/agents/learning-agent'
 import { sendOutcomeEmail } from '@/lib/email'
 import type { DisputeType, Bureau, OutcomeResult } from '@/lib/types'
 
+/** Everything about one dispatch record that the outcome flow needs. */
+interface DispatchContext {
+  id: string
+  bureau: string
+  sent_at: string | null
+  dispute_item_id: string
+  letter_content: string | null
+  item_type: string
+  legal_basis: string | null
+  round: number | null
+  account_name: string
+  amount: number | null
+  dispute_reason: string | null
+  specialist_output: { strategy?: string; letterTone?: string } | null
+  case_id: string
+  owner_id: string
+  full_name: string | null
+  email: string | null
+  [key: string]: unknown
+}
+
+const DISPATCH_CONTEXT_SQL = `
+  select dr.id, dr.bureau, dr.sent_at,
+         l.dispute_item_id, l.content as letter_content,
+         di.type as item_type, di.legal_basis, di.round, di.account_name, di.amount,
+         di.dispute_reason, di.specialist_output,
+         c.id as case_id, c.user_id as owner_id,
+         p.full_name, p.email
+    from dispatch_records dr
+    join letters l on l.id = dr.letter_id
+    join dispute_items di on di.id = l.dispute_item_id
+    join cases c on c.id = di.case_id
+    left join profiles p on p.id = c.user_id`
+
+function daysSince(iso: string | null): number | null {
+  if (!iso) return null
+  return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24))
+}
+
 export async function POST(req: NextRequest) {
   try {
-    // Verify authenticated user
-    const authClient = await createClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    const user = await getSessionUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -17,111 +56,76 @@ export async function POST(req: NextRequest) {
     if (!['removed', 'modified', 'verified', 'no_response'].includes(result)) {
       return NextResponse.json({ error: 'Invalid result' }, { status: 400 })
     }
-    const supabase = createServiceClient()
 
-    const { data: dispatch } = await supabase
-      .from('dispatch_records')
-      .select('*, letters(dispute_item_id, content, dispute_items!inner(cases!inner(user_id, profiles(full_name, email))))')
-      .eq('id', dispatchRecordId)
-      .single()
+    const dispatch = isUuid(dispatchRecordId)
+      ? await q1<DispatchContext>(`${DISPATCH_CONTEXT_SQL} where dr.id = $1`, [dispatchRecordId])
+      : null
 
     if (!dispatch) {
       return NextResponse.json({ error: 'Dispatch record not found' }, { status: 404 })
     }
 
-    // Verify the dispatch belongs to the authenticated user
-    const dispatchDisputeItem = Array.isArray(dispatch.letters?.dispute_items)
-      ? dispatch.letters?.dispute_items[0]
-      : dispatch.letters?.dispute_items
-    if (dispatchDisputeItem?.cases?.user_id !== user.id) {
+    // The dispatch must belong to the signed-in user.
+    if (dispatch.owner_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    await supabase
-      .from('dispatch_records')
-      .update({ status: 'response_received', response_received_at: new Date().toISOString() })
-      .eq('id', dispatchRecordId)
-
-    await supabase.from('outcomes').insert({
-      dispatch_record_id: dispatchRecordId,
-      result,
-      score_impact_points: scoreImpactPoints,
-      notes,
+    await tx(async (t) => {
+      await q(
+        `update dispatch_records set status = 'response_received', response_received_at = now() where id = $1`,
+        [dispatchRecordId],
+        t
+      )
+      await insert(
+        'outcomes',
+        {
+          dispatch_record_id: dispatchRecordId,
+          result,
+          score_impact_points: Number.isFinite(Number(scoreImpactPoints)) ? Math.round(Number(scoreImpactPoints)) : null,
+          notes: typeof notes === 'string' ? notes.slice(0, 2000) : null,
+        },
+        { on: t }
+      )
+      await update('dispute_items', { status: result }, { id: dispatch.dispute_item_id }, t)
     })
 
-    const statusMap: Record<string, string> = {
-      removed: 'removed',
-      modified: 'modified',
-      verified: 'verified',
-      no_response: 'no_response',
-    }
-
-    if (dispatch.letters?.dispute_item_id) {
-      await supabase
-        .from('dispute_items')
-        .update({ status: statusMap[result] || 'received' })
-        .eq('id', dispatch.letters.dispute_item_id)
-    }
-
-    // Send email notification to user
-    const dipItem = Array.isArray(dispatch.letters?.dispute_items)
-      ? dispatch.letters?.dispute_items[0]
-      : dispatch.letters?.dispute_items
-    const userEmail = dipItem?.cases?.profiles?.email
-    const userName = dipItem?.cases?.profiles?.full_name
-
-    if (userEmail) {
+    if (dispatch.email) {
       sendOutcomeEmail(
-        userEmail,
-        userName ?? 'User',
-        dipItem?.account_name ?? 'Account',
+        dispatch.email,
+        dispatch.full_name ?? 'User',
+        dispatch.account_name ?? 'Account',
         dispatch.bureau,
         result,
-        dipItem?.cases?.id ?? ''
+        dispatch.case_id
       ).catch(() => {})
     }
 
-    // Pull full dispute context for learning agent
-    const { data: disputeItem } = await supabase
-      .from('dispute_items')
-      .select('type, legal_basis, round, account_name, amount, dispute_reason, specialist_output')
-      .eq('id', dispatch.letters?.dispute_item_id)
-      .single()
+    const daysToResponse = daysSince(dispatch.sent_at)
 
-    if (disputeItem) {
-      const sentAt = new Date(dispatch.sent_at)
-      const now = new Date()
-      const daysToResponse = Math.floor((now.getTime() - sentAt.getTime()) / (1000 * 60 * 60 * 24))
+    // Record to legacy intelligence table
+    await insert('intelligence_records', {
+      dispute_type: dispatch.item_type,
+      bureau: dispatch.bureau,
+      legal_basis: dispatch.legal_basis,
+      round: dispatch.round ?? 1,
+      result,
+      days_to_response: daysToResponse,
+    })
 
-      // Record to legacy intelligence table
-      await supabase.from('intelligence_records').insert({
-        dispute_type: disputeItem.type,
-        bureau: dispatch.bureau,
-        legal_basis: disputeItem.legal_basis,
-        round: disputeItem.round,
-        result,
-        days_to_response: daysToResponse,
-      })
-
-      // Feed outcome back to orchestrator learning agent (non-blocking)
-      const specialistOutput = disputeItem.specialist_output as {
-        strategy?: string; letterTone?: string
-      } | null
-
-      processOutcome({
-        disputeType: disputeItem.type as DisputeType,
-        bureau: dispatch.bureau as Bureau,
-        legalBasisUsed: disputeItem.legal_basis ?? 'FCRA §611',
-        strategySummary: specialistOutput?.strategy ?? disputeItem.dispute_reason ?? '',
-        letterTone: specialistOutput?.letterTone ?? 'firm',
-        letterContent: dispatch.letters?.content ?? '',
-        outcome: result as OutcomeResult,
-        daysToResponse,
-        round: disputeItem.round ?? 1,
-        accountName: disputeItem.account_name,
-        amount: disputeItem.amount,
-      }).catch((err) => console.error('Learning agent error (non-fatal):', err))
-    }
+    // Feed outcome back to orchestrator learning agent (non-blocking)
+    processOutcome({
+      disputeType: dispatch.item_type as DisputeType,
+      bureau: dispatch.bureau as Bureau,
+      legalBasisUsed: dispatch.legal_basis ?? 'FCRA §611',
+      strategySummary: dispatch.specialist_output?.strategy ?? dispatch.dispute_reason ?? '',
+      letterTone: dispatch.specialist_output?.letterTone ?? 'firm',
+      letterContent: dispatch.letter_content ?? '',
+      outcome: result as OutcomeResult,
+      daysToResponse: daysToResponse ?? 0,
+      round: dispatch.round ?? 1,
+      accountName: dispatch.account_name,
+      amount: dispatch.amount ?? undefined,
+    }).catch((err) => console.error('Learning agent error (non-fatal):', err))
 
     return NextResponse.json({ success: true })
   } catch (err) {
@@ -140,83 +144,59 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const supabase = createServiceClient()
-    const now = new Date().toISOString()
-
-    const { data: expired } = await supabase
-      .from('dispatch_records')
-      .select('id')
-      .eq('status', 'sent')
-      .lt('response_due_at', now)
-
-    if (expired && expired.length > 0) {
-      const ids = expired.map((r: { id: string }) => r.id)
-      await supabase
-        .from('dispatch_records')
-        .update({ status: 'no_response' })
-        .in('id', ids)
-
-      await supabase.from('outcomes').insert(
-        ids.map((id: string) => ({ dispatch_record_id: id, result: 'no_response' }))
+    // Flip expired windows and record the outcome in one transaction, so a
+    // second cron run can't double-count the same records.
+    const ids = await tx(async (t) => {
+      const expired = await q<{ id: string }>(
+        `update dispatch_records set status = 'no_response'
+          where status = 'sent' and response_due_at < now()
+          returning id`,
+        [],
+        t
       )
+      const list = expired.map((r) => r.id)
+      if (list.length) {
+        await q(
+          `insert into outcomes (dispatch_record_id, result) select unnest($1::uuid[]), 'no_response'`,
+          [list],
+          t
+        )
+      }
+      return list
+    })
 
-      // Feed no_response outcomes to learning agent + send email notifications
-      const { data: expiredRecords } = await supabase
-        .from('dispatch_records')
-        .select(`
-          id, bureau, sent_at, letter_id,
-          letters!inner(
-            content, dispute_item_id,
-            dispute_items!inner(
-              type, legal_basis, round, account_name, amount, specialist_output,
-              cases!inner(id, user_id, profiles(full_name, email))
-            )
-          )
-        `)
-        .in('id', ids)
+    if (ids.length > 0) {
+      const records = await q<DispatchContext>(`${DISPATCH_CONTEXT_SQL} where dr.id = any($1::uuid[])`, [ids])
+      const { sendNoResponseEmail } = await import('@/lib/email')
 
-      for (const record of expiredRecords ?? []) {
-        const letter = Array.isArray(record.letters) ? record.letters[0] : record.letters
-        if (!letter) continue
-        const item = Array.isArray(letter.dispute_items) ? letter.dispute_items[0] : letter.dispute_items
-        if (!item) continue
-
-        const sentAt = new Date(record.sent_at)
-        const daysElapsed = Math.floor((Date.now() - sentAt.getTime()) / (1000 * 60 * 60 * 24))
-        const specialistOutput = item.specialist_output as { strategy?: string; letterTone?: string } | null
-
+      for (const record of records) {
         processOutcome({
-          disputeType: item.type as DisputeType,
+          disputeType: record.item_type as DisputeType,
           bureau: record.bureau as Bureau,
-          legalBasisUsed: item.legal_basis ?? 'FCRA §611',
-          strategySummary: specialistOutput?.strategy ?? '',
-          letterTone: specialistOutput?.letterTone ?? 'firm',
-          letterContent: letter.content ?? '',
+          legalBasisUsed: record.legal_basis ?? 'FCRA §611',
+          strategySummary: record.specialist_output?.strategy ?? '',
+          letterTone: record.specialist_output?.letterTone ?? 'firm',
+          letterContent: record.letter_content ?? '',
           outcome: 'no_response',
-          daysToResponse: daysElapsed,
-          round: item.round ?? 1,
-          accountName: item.account_name,
-          amount: item.amount,
+          daysToResponse: daysSince(record.sent_at) ?? 0,
+          round: record.round ?? 1,
+          accountName: record.account_name,
+          amount: record.amount ?? undefined,
         }).catch((err) => console.error('Learning agent (no_response) error:', err))
 
-        // Send email notification if we have user info
-        const caseRow = Array.isArray(item.cases) ? item.cases[0] : item.cases
-        const profile = Array.isArray(caseRow?.profiles) ? caseRow.profiles[0] : caseRow?.profiles
-        if (profile?.email) {
-          const caseId = caseRow?.id ?? ''
-          const { sendNoResponseEmail } = await import('@/lib/email')
+        if (record.email) {
           sendNoResponseEmail(
-            profile.email,
-            profile.full_name ?? 'User',
-            item.account_name,
+            record.email,
+            record.full_name ?? 'User',
+            record.account_name,
             record.bureau,
-            caseId
+            record.case_id
           ).catch(() => {})
         }
       }
     }
 
-    return NextResponse.json({ checked: expired?.length ?? 0 })
+    return NextResponse.json({ checked: ids.length })
   } catch (err) {
     console.error('Outcome tracker check error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

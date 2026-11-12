@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
 import { PLAN_IDS } from '@/lib/square/client'
 import { isFirmBillingKey } from '@/lib/pricing'
 import CheckoutForm from './CheckoutForm'
@@ -13,16 +13,10 @@ export default async function CheckoutPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getSessionUser()
   if (!user) redirect('/login?redirect=/checkout')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-  if (profile?.role !== 'partner' && profile?.role !== 'admin') redirect('/dashboard')
+  if (user.role !== 'partner' && user.role !== 'admin') redirect('/dashboard')
 
   const raw = (await searchParams).plan
   const requested = Array.isArray(raw) ? raw[0] : raw

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { insert, q1, update } from '@/lib/db'
+import { isUuid } from '@/lib/ids'
 
 /**
  * POST /api/letters/[id]/mark-sent
@@ -14,26 +16,27 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const authClient = await createClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    const user = await getSessionUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const supabase = createServiceClient()
-
-    const { data: letter } = await supabase
-      .from('letters')
-      .select('id, bureau, dispute_item_id, dispute_items(cases(user_id))')
-      .eq('id', id)
-      .single()
+    const letter = isUuid(id)
+      ? await q1<{ id: string; bureau: string; dispute_item_id: string; owner_id: string }>(
+          `select l.id, l.bureau, l.dispute_item_id, c.user_id as owner_id
+             from letters l
+             join dispute_items di on di.id = l.dispute_item_id
+             join cases c on c.id = di.case_id
+            where l.id = $1`,
+          [id]
+        )
+      : null
 
     if (!letter) {
       return NextResponse.json({ error: 'Letter not found' }, { status: 404 })
     }
 
-    const item = letter.dispute_items as unknown as { cases?: { user_id?: string } } | null
-    if (item?.cases?.user_id !== user.id) {
+    if (letter.owner_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -41,44 +44,31 @@ export async function POST(
     const responseDueAt = new Date(sentAt)
     responseDueAt.setDate(responseDueAt.getDate() + 30)
 
-    const { data: queued } = await supabase
-      .from('dispatch_records')
-      .select('id')
-      .eq('letter_id', id)
-      .eq('status', 'queued')
-      .limit(1)
-      .maybeSingle()
+    const queued = await q1<{ id: string }>(
+      `select id from dispatch_records where letter_id = $1 and status = 'queued' limit 1`,
+      [id]
+    )
 
-    const update = {
+    const fields = {
       status: 'sent',
       sent_at: sentAt.toISOString(),
       response_due_at: responseDueAt.toISOString(),
     }
 
     if (queued) {
-      const { error } = await supabase.from('dispatch_records').update(update).eq('id', queued.id)
-      if (error) throw error
+      await update('dispatch_records', fields, { id: queued.id })
     } else {
-      const { data: existing } = await supabase
-        .from('dispatch_records')
-        .select('id')
-        .eq('letter_id', id)
-        .not('sent_at', 'is', null)
-        .limit(1)
-        .maybeSingle()
+      const existing = await q1(
+        `select id from dispatch_records where letter_id = $1 and sent_at is not null limit 1`,
+        [id]
+      )
       if (existing) {
         return NextResponse.json({ error: 'Already marked as mailed' }, { status: 409 })
       }
-      const { error } = await supabase
-        .from('dispatch_records')
-        .insert({ letter_id: id, bureau: letter.bureau, ...update })
-      if (error) throw error
+      await insert('dispatch_records', { letter_id: id, bureau: letter.bureau, ...fields })
     }
 
-    await supabase
-      .from('dispute_items')
-      .update({ status: 'dispatched' })
-      .eq('id', letter.dispute_item_id)
+    await update('dispute_items', { status: 'dispatched' }, { id: letter.dispute_item_id })
 
     return NextResponse.json({ success: true, responseDueAt: responseDueAt.toISOString() })
   } catch (err) {

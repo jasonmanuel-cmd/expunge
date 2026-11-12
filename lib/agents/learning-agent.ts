@@ -1,5 +1,5 @@
 import { runAgent } from '@/lib/ai'
-import { createServiceClient } from '@/lib/supabase/server'
+import { q } from '@/lib/db'
 import type { DisputeType, Bureau, OutcomeResult } from '@/lib/types'
 
 export interface OutcomeContext {
@@ -47,8 +47,6 @@ interface LearningOutput {
 }
 
 export async function processOutcome(ctx: OutcomeContext): Promise<void> {
-  const supabase = createServiceClient()
-
   const userMessage = `Analyze this completed dispute outcome:
 
 DISPUTE DETAILS:
@@ -86,54 +84,38 @@ Extract the learning insight for this outcome.`
     }
   }
 
-  // Upsert into orchestrator_memory — update existing record or create new one
-  const { data: existing } = await supabase
-    .from('orchestrator_memory')
-    .select('id, sample_count, success_rate, avg_days_to_response, confidence_score')
-    .eq('dispute_type', ctx.disputeType)
-    .eq('bureau', ctx.bureau)
-    .eq('legal_basis_used', ctx.legalBasisUsed)
-    .eq('outcome', ctx.outcome)
-    .eq('round', ctx.round)
-    .maybeSingle()
-
-  if (existing) {
-    const newSampleCount = (existing.sample_count ?? 1) + 1
-    const newSuccessRate = (
-      ((existing.success_rate ?? 0) * (existing.sample_count ?? 1)) + learning.successRate
-    ) / newSampleCount
-    const newAvgDays = (
-      ((existing.avg_days_to_response ?? ctx.daysToResponse) * (existing.sample_count ?? 1)) + ctx.daysToResponse
-    ) / newSampleCount
-    const newConfidence = Math.min(0.95, (existing.confidence_score ?? 0.5) * 0.7 + learning.confidenceScore * 0.3)
-
-    await supabase
-      .from('orchestrator_memory')
-      .update({
-        insight: learning.insight,
-        confidence_score: newConfidence,
-        success_rate: newSuccessRate,
-        avg_days_to_response: newAvgDays,
-        sample_count: newSampleCount,
-        strategy_summary: ctx.strategySummary,
-        letter_tone: ctx.letterTone,
-        last_updated: new Date().toISOString(),
-      })
-      .eq('id', existing.id)
-  } else {
-    await supabase.from('orchestrator_memory').insert({
-      dispute_type: ctx.disputeType,
-      bureau: ctx.bureau,
-      legal_basis_used: ctx.legalBasisUsed,
-      strategy_summary: ctx.strategySummary,
-      letter_tone: ctx.letterTone,
-      outcome: ctx.outcome,
-      avg_days_to_response: ctx.daysToResponse,
-      round: ctx.round,
-      insight: learning.insight,
-      confidence_score: learning.confidenceScore,
-      success_rate: learning.successRate,
-      sample_count: 1,
-    })
-  }
+  // Upsert into orchestrator_memory in one statement (keyed by the table's
+  // unique pattern), so two outcomes landing at once can't create duplicates
+  // or lose a sample. Same running-average math as before.
+  await q(
+    `insert into orchestrator_memory
+       (dispute_type, bureau, legal_basis_used, strategy_summary, letter_tone, outcome,
+        avg_days_to_response, round, insight, confidence_score, success_rate, sample_count)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 1)
+     on conflict (dispute_type, bureau, legal_basis_used, outcome, round) do update set
+       insight = excluded.insight,
+       confidence_score = least(0.95, coalesce(orchestrator_memory.confidence_score, 0.5) * 0.7 + excluded.confidence_score * 0.3),
+       success_rate = (coalesce(orchestrator_memory.success_rate, 0) * coalesce(orchestrator_memory.sample_count, 1) + excluded.success_rate)
+                      / (coalesce(orchestrator_memory.sample_count, 1) + 1),
+       avg_days_to_response = (coalesce(orchestrator_memory.avg_days_to_response, excluded.avg_days_to_response) * coalesce(orchestrator_memory.sample_count, 1)
+                               + excluded.avg_days_to_response)
+                              / (coalesce(orchestrator_memory.sample_count, 1) + 1),
+       sample_count = coalesce(orchestrator_memory.sample_count, 1) + 1,
+       strategy_summary = excluded.strategy_summary,
+       letter_tone = excluded.letter_tone,
+       last_updated = now()`,
+    [
+      ctx.disputeType,
+      ctx.bureau,
+      ctx.legalBasisUsed,
+      ctx.strategySummary,
+      ctx.letterTone,
+      ctx.outcome,
+      ctx.daysToResponse,
+      ctx.round,
+      learning.insight,
+      Math.min(1, Math.max(0, learning.confidenceScore)),
+      Math.min(1, Math.max(0, learning.successRate)),
+    ]
+  )
 }

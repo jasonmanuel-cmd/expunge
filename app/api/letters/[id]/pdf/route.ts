@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { q1 } from '@/lib/db'
+import { isUuid } from '@/lib/ids'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 
 export const runtime = 'nodejs'
@@ -10,27 +12,37 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const authClient = await createClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    const user = await getSessionUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const supabase = createServiceClient()
-
-    const { data: letter } = await supabase
-      .from('letters')
-      .select('*, dispute_items(cases(user_id, profiles(full_name, email)))')
-      .eq('id', id)
-      .single()
+    const letter = isUuid(id)
+      ? await q1<{
+          bureau: string
+          round: number
+          is_cfpb_complaint: boolean | null
+          content: string
+          owner_id: string
+          full_name: string | null
+          email: string | null
+        }>(
+          `select l.*, c.user_id as owner_id, p.full_name, p.email
+             from letters l
+             join dispute_items di on di.id = l.dispute_item_id
+             join cases c on c.id = di.case_id
+             left join profiles p on p.id = c.user_id
+            where l.id = $1`,
+          [id]
+        )
+      : null
 
     if (!letter) {
       return NextResponse.json({ error: 'Letter not found' }, { status: 404 })
     }
 
-    const profile = letter.dispute_items?.cases?.profiles
-    const caseOwnerId = letter.dispute_items?.cases?.user_id
-    if (caseOwnerId !== user.id) {
+    const profile = { full_name: letter.full_name, email: letter.email }
+    if (letter.owner_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

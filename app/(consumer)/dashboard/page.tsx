@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { q, q1 } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
@@ -28,24 +29,34 @@ const ITEM_STATUS_COLORS: Record<string, string> = {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getSessionUser()
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  const profile = await q1<{ role: string; full_name: string | null }>(
+    `select role, full_name from profiles where id = $1`,
+    [user.id]
+  )
 
   if (profile?.role === 'partner') redirect('/partner/dashboard')
 
-  const { data: cases } = await supabase
-    .from('cases')
-    .select('*, dispute_items(id, type, account_name, status, bureau)')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  // Only this user's own cases.
+  const cases = await q<{
+    id: string
+    status: string
+    created_at: string
+    dispute_items: Array<{ id: string; type: string; account_name: string; status: string; bureau: string }>
+  }>(
+    `select c.id, c.status, c.created_at, c.round, c.source_file,
+            coalesce((select json_agg(json_build_object(
+                        'id', di.id, 'type', di.type, 'account_name', di.account_name,
+                        'status', di.status, 'bureau', di.bureau) order by di.created_at)
+                      from dispute_items di where di.case_id = c.id), '[]'::json) as dispute_items
+       from cases c
+      where c.user_id = $1
+      order by c.created_at desc`,
+    [user.id]
+  )
 
   // Effective plan: a client invited by a firm with an active firm plan is
   // covered. Clients never pay Expunge, so there are no upgrade prompts.

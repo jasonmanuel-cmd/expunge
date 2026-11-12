@@ -1,48 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
-import type { EmailOtpType } from '@supabase/supabase-js'
-import { createClient } from '@/lib/supabase/server'
+import { startSession } from '@/lib/auth'
+import { confirmEmailToken } from '@/lib/auth-flows'
 
-// Handles Supabase email-confirmation and OAuth redirects.
-// Email confirmation links arrive as ?token_hash=...&type=signup
-// OAuth / magic-link PKCE arrives as ?code=...
-// The redirect target is passed via ?next=<path> and reconstructed on the
-// server side to avoid Supabase email-link encoding issues.
+// Handles the email-confirmation link: /auth/callback?token=...&type=confirm
+// The post-confirm redirect comes from ?next= or the expunge_next cookie the
+// sign-up action sets.
+function safeNext(raw: string | null | undefined): string {
+  if (!raw) return '/dashboard'
+  let next = raw
+  try {
+    next = decodeURIComponent(raw)
+  } catch {
+    return '/dashboard'
+  }
+  return next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
-  const tokenHash = searchParams.get('token_hash')
-  const type = searchParams.get('type') as EmailOtpType | null
-  // Read the post-auth redirect target from the cookie set by the register
-  // page. This avoids Supabase email-link URL re-encoding issues that break
-  // nested ?next= query params.
-  const nextCookie = searchParams.get('next')
-    ?? request.cookies.get('expunge_next')?.value
-    ?? '/dashboard'
-  const next = decodeURIComponent(nextCookie)
+  const token = searchParams.get('token')
+  const next = safeNext(searchParams.get('next') ?? request.cookies.get('expunge_next')?.value)
 
-  const supabase = await createClient()
-
-  if (tokenHash && type) {
-    const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash })
-    if (!error) {
-      return NextResponse.redirect(new URL(next, origin))
-    }
+  const userId = token ? await confirmEmailToken(token) : null
+  if (!userId) {
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(error.message)}`, origin)
+      new URL('/login?error=Invalid+or+expired+confirmation+link', origin)
     )
   }
 
-  if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      return NextResponse.redirect(new URL(next, origin))
-    }
-    return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(error.message)}`, origin)
-    )
-  }
-
-  return NextResponse.redirect(
-    new URL('/login?error=Invalid+or+expired+confirmation+link', origin)
-  )
+  await startSession(userId)
+  const res = NextResponse.redirect(new URL(next, origin))
+  res.cookies.delete('expunge_next')
+  return res
 }

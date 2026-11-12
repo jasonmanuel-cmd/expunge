@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signInAction, resendConfirmationAction } from '@/app/(auth)/actions'
 import ExpungeLogo from '@/components/ExpungeLogo'
 
 export default function LoginPage() {
@@ -21,31 +21,28 @@ export default function LoginPage() {
     setNeedsConfirm(false)
     setResent(false)
 
-    const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    const result = await signInAction(email, password)
 
-    if (authError) {
-      setError(authError.message)
-      if (authError.message.toLowerCase().includes('not confirmed')) {
+    if (result.error) {
+      setError(result.error)
+      if (result.needsConfirm) {
         setNeedsConfirm(true)
       }
       setLoading(false)
       return
     }
 
-    router.push('/dashboard')
+    // Honor ?redirect= from the sign-in guard (same-site paths only).
+    const redirect = new URLSearchParams(window.location.search).get('redirect')
+    router.push(redirect && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/dashboard')
+    router.refresh()
   }
 
   async function handleResend() {
     setResent(false)
-    const supabase = createClient()
-    const { error: resendError } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback/` },
-    })
+    const { error: resendError } = await resendConfirmationAction(email)
     if (resendError) {
-      setError(resendError.message)
+      setError(resendError)
       return
     }
     setResent(true)

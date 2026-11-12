@@ -1,6 +1,21 @@
 # Expunge — Launch Checklist
 
-## Status: Code 100% DONE ✅ | Supabase DONE ✅ | Square + Resend confirmed ✅
+## Status: Code 100% DONE ✅ | Square + Resend confirmed ✅ | Database moving to Neon (see below)
+
+## Database: Neon (Nov 2026)
+
+Expunge no longer uses Supabase. The database is Neon Postgres and sign-in is
+Expunge's own (`lib/auth.ts`). To switch over:
+
+1. Create a Neon project. Copy its pooled connection string.
+2. Copy the data: `SUPABASE_DB_URL=... DATABASE_URL=... node scripts/import-from-supabase.mjs`
+   (creates the schema, copies users with their passwords, and every table;
+   re-run with `--check` to compare row counts).
+3. In Vercel set `DATABASE_URL`, `RESEND_API_KEY`, `CRON_SECRET` and
+   `NEXT_PUBLIC_APP_URL`, then remove the three `SUPABASE` variables.
+4. Deploy, sign in with an existing account, and check a client's case page.
+
+Everything below that mentions Supabase is history from before the move.
 
 Production URL: https://expunge-tau.vercel.app
 Supabase Project: axzepqtovatvxhnaupgf (the project `.env.local` actually points at)
@@ -122,7 +137,7 @@ Invoke-RestMethod -Uri "https://expunge-tau.vercel.app/api/admin/seed-knowledge"
 Once all blockers are resolved, test this flow:
 
 1. **Sign up** at /register → fill in all personal data
-2. **Verify email** (check inbox for Supabase auth email)
+2. **Verify email** (check inbox for the Expunge confirmation email)
 3. **Log in** at /login
 4. **Upload credit report** at /upload → paste text from AnnualCreditReport.com
 5. **Wait 1-2 minutes** for AI analysis
@@ -138,9 +153,8 @@ Once all blockers are resolved, test this flow:
 
 | Variable | Local Value | Production Value |
 |----------|------------|-----------------|
-| NEXT_PUBLIC_SUPABASE_URL | https://tohxaqcnowjtotmpdqky.supabase.co | same |
-| NEXT_PUBLIC_SUPABASE_ANON_KEY | eyJhbG...e-Tc | same |
-| SUPABASE_SERVICE_ROLE_KEY | eyJhbG...3gVY | same |
+| DATABASE_URL | local or Neon branch | Neon pooled connection string |
+| RESEND_API_KEY | *** | set in Vercel (sign-in emails) |
 | OPENAI_API_KEY | *** | set in Vercel |
 | NEXT_PUBLIC_SQUARE_APP_ID | sandbox-sq0idb-... | PRODUCTION value |
 | SQUARE_ACCESS_TOKEN | EAAAl0... | PRODUCTION value |

@@ -1,4 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { q1 } from '@/lib/db'
+import { isUuid } from '@/lib/ids'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
@@ -29,24 +31,44 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
+type DisputeItemView = {
+  id: string; account_name: string; type: string; bureau: string; status: string;
+  dispute_reason: string; legal_basis: string; amount?: number; round: number;
+  letters: Array<{ id: string; bureau: string; content: string; round: number; is_cfpb_complaint: boolean;
+    dispatch_records: Array<{ id: string; bureau: string; status: string; sent_at?: string; response_due_at?: string;
+      outcomes: Array<{ result: string; recorded_at: string }> }> }>
+}
+
 export default async function DisputeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getSessionUser()
   if (!user) redirect('/login')
+  if (!isUuid(id)) notFound()
 
-  const { data: caseData } = await supabase
-    .from('cases')
-    .select(`
-      *,
-      dispute_items(
-        *,
-        letters(*, dispatch_records(*, outcomes(*)))
-      )
-    `)
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .single()
+  // The case only loads when it belongs to the signed-in user.
+  const caseData = await q1<{
+    id: string
+    created_at: string
+    round: number
+    dispute_items: DisputeItemView[]
+  }>(
+    `select c.*,
+            coalesce((
+              select json_agg(to_jsonb(di) || jsonb_build_object('letters', coalesce((
+                       select jsonb_agg(to_jsonb(l) || jsonb_build_object('dispatch_records', coalesce((
+                                select jsonb_agg(to_jsonb(dr) || jsonb_build_object('outcomes', coalesce((
+                                         select jsonb_agg(to_jsonb(o) order by o.recorded_at)
+                                           from outcomes o where o.dispatch_record_id = dr.id), '[]'::jsonb))
+                                         order by dr.created_at)
+                                  from dispatch_records dr where dr.letter_id = l.id), '[]'::jsonb))
+                              order by l.created_at)
+                         from letters l where l.dispute_item_id = di.id), '[]'::jsonb))
+                     order by di.created_at)
+                from dispute_items di where di.case_id = c.id), '[]'::json) as dispute_items
+       from cases c
+      where c.id = $1 and c.user_id = $2`,
+    [id, user.id]
+  )
 
   if (!caseData) notFound()
 
@@ -69,13 +91,7 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
         </div>
 
         <div className="space-y-6">
-          {(caseData.dispute_items ?? []).map((item: {
-            id: string; account_name: string; type: string; bureau: string; status: string;
-            dispute_reason: string; legal_basis: string; amount?: number; round: number;
-            letters: Array<{ id: string; bureau: string; content: string; round: number; is_cfpb_complaint: boolean;
-              dispatch_records: Array<{ id: string; bureau: string; status: string; sent_at?: string; response_due_at?: string;
-                outcomes: Array<{ result: string; recorded_at: string }> }> }>;
-          }) => {
+          {(caseData.dispute_items ?? []).map((item: DisputeItemView) => {
             const allLetters = item.letters ?? []
             const allDispatches = allLetters.flatMap((l) => l.dispatch_records ?? [])
             const latestOutcome = allDispatches.flatMap((d) => d.outcomes ?? []).slice(-1)[0]

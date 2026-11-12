@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth'
+import { insert, q1, update } from '@/lib/db'
+import { isUuid } from '@/lib/ids'
 import { runOrchestrator } from '@/lib/agents/orchestrator'
 import { routeCases } from '@/lib/agents/case-router'
 import { runSpecialistAgent } from '@/lib/agents/specialists'
@@ -37,16 +39,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { caseId } = body
 
-    // Authenticate the request using the user's session cookie.
-    // (Must use the cookie-aware client — the service client has no session.)
-    const authClient = await createClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    const user = await getSessionUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Service client for privileged DB reads/writes below.
-    const supabase = createServiceClient()
     if (!checkRateLimit(user.id)) {
       return NextResponse.json({ error: 'Too many requests. Please wait a minute.' }, { status: 429 })
     }
@@ -56,13 +53,35 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch the case and verify ownership
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('*, profiles(full_name, email, address_line1, address_line2, city, state, zip_code, ssn_last4, date_of_birth)')
-      .eq('id', caseId)
-      .single()
+    const caseData = isUuid(caseId)
+      ? await q1<{
+          user_id: string
+          credit_report_text: string | null
+          profiles: {
+            full_name: string | null
+            email: string | null
+            address_line1: string | null
+            address_line2: string | null
+            city: string | null
+            state: string | null
+            zip_code: string | null
+            ssn_last4: string | null
+            date_of_birth: string | null
+          } | null
+        }>(
+          `select c.user_id, c.credit_report_text,
+                  (select to_jsonb(x) from (
+                     select p.full_name, p.email, p.address_line1, p.address_line2, p.city,
+                            p.state, p.zip_code, p.ssn_last4, p.date_of_birth::text as date_of_birth
+                       from profiles p where p.id = c.user_id
+                  ) x) as profiles
+             from cases c
+            where c.id = $1`,
+          [caseId]
+        )
+      : null
 
-    if (caseError || !caseData) {
+    if (!caseData) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 })
     }
 
@@ -100,7 +119,7 @@ export async function POST(req: NextRequest) {
     }
 
     ownedCaseId = caseId
-    await supabase.from('cases').update({ status: 'analyzing' }).eq('id', caseId)
+    await update('cases', { status: 'analyzing' }, { id: caseId })
 
     // Step 1: Master Orchestrator
     const orchestratorOutput = await runOrchestrator(caseData.credit_report_text)
@@ -114,10 +133,7 @@ export async function POST(req: NextRequest) {
     }
     orchestratorOutput.totalDisputableItems = orchestratorOutput.items.length
     const itemsOverLimit = foundItemCount - orchestratorOutput.items.length
-    await supabase
-      .from('cases')
-      .update({ orchestrator_output: orchestratorOutput, status: 'routing' })
-      .eq('id', caseId)
+    await update('cases', { orchestrator_output: orchestratorOutput, status: 'routing' }, { id: caseId })
 
     // Step 2: Case Router
     const routedItems = await routeCases(orchestratorOutput.items)
@@ -136,14 +152,14 @@ export async function POST(req: NextRequest) {
       round: 1,
     }))
 
-    const { data: insertedItems } = await supabase
-      .from('dispute_items')
-      .insert(disputeItemsToInsert)
-      .select()
+    // Insert in one statement and keep the input order (ids are matched by index below).
+    const insertedItems = disputeItemsToInsert.length
+      ? await insert<{ id: string }>('dispute_items', disputeItemsToInsert)
+      : []
 
-    await supabase.from('cases').update({ status: 'active' }).eq('id', caseId)
+    await update('cases', { status: 'active' }, { id: caseId })
 
-    if (!insertedItems) {
+    if (insertedItems.length !== disputeItemsToInsert.length) {
       return NextResponse.json({ error: 'Failed to insert dispute items' }, { status: 500 })
     }
 
@@ -181,10 +197,7 @@ export async function POST(req: NextRequest) {
         if (!item || !dbItem) return
 
         const specialistOutput = await runSpecialistAgent(item, consumerName)
-        await supabase
-          .from('dispute_items')
-          .update({ specialist_output: specialistOutput, status: 'letter_drafted' })
-          .eq('id', dbItem.id)
+        await update('dispute_items', { specialist_output: specialistOutput, status: 'letter_drafted' }, { id: dbItem.id })
 
         // Single-bureau plans get one letter per item; tri-bureau plans get all three.
         const bureaus: Bureau[] =
@@ -198,21 +211,18 @@ export async function POST(req: NextRequest) {
           bureaus.map(async (bureau) => {
             const letterContent = await generateLetter(item, specialistOutput, consumer, bureau, 1)
 
-            const { data: letter } = await supabase
-              .from('letters')
-              .insert({ dispute_item_id: dbItem.id, bureau, content: letterContent, round: 1 })
-              .select()
-              .single()
+            const [letter] = await insert<{ id: string }>('letters', {
+              dispute_item_id: dbItem.id,
+              bureau,
+              content: letterContent,
+              round: 1,
+            })
 
             if (letter) {
               // Expunge does not mail letters. The record waits as 'queued' until
               // the consumer marks the letter as mailed (POST /api/letters/[id]/mark-sent),
               // which starts the 30-day response window.
-              await supabase.from('dispatch_records').insert({
-                letter_id: letter.id,
-                bureau,
-                status: 'queued',
-              })
+              await insert('dispatch_records', { letter_id: letter.id, bureau, status: 'queued' })
             }
           })
         )
@@ -220,7 +230,7 @@ export async function POST(req: NextRequest) {
       })
     )
 
-    await supabase.from('cases').update({ status: 'active' }).eq('id', caseId)
+    await update('cases', { status: 'active' }, { id: caseId })
 
     // Send email notification
     const userEmail = profile?.email
@@ -242,11 +252,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('Orchestrator error:', err)
     if (ownedCaseId) {
-      await createServiceClient()
-        .from('cases')
-        .update({ status: 'failed' })
-        .eq('id', ownedCaseId)
-        .then(undefined, () => {})
+      await update('cases', { status: 'failed' }, { id: ownedCaseId }).catch(() => {})
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

@@ -50,7 +50,7 @@ so re-apply a custom count after a plan change.
 ## Activating an invoiced annual license
 
 When a firm pays an annual license invoice, give its account a year of access
-in the Supabase SQL editor. Replace the email with the firm's sign-up email:
+in the Neon SQL editor. Replace the email with the firm's sign-up email:
 
 ```sql
 update public.subscriptions s

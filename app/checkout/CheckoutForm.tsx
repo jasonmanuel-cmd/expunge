@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { currentUserAction } from '@/app/(auth)/actions'
 import { CHECKOUT_OFFERS, type FirmBillingKey } from '@/lib/pricing'
 import Link from 'next/link'
 import ExpungeLogo from '@/components/ExpungeLogo'
@@ -62,8 +62,7 @@ export default function CheckoutForm({ planKey }: { planKey: FirmBillingKey }) {
     setLoading(true)
     setError('')
 
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUserAction()
     if (!user) { router.push('/login'); return }
 
     const result = await cardInstance.tokenize()

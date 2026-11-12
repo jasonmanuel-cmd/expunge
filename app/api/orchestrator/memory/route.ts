@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { q } from '@/lib/db'
 
 // GET /api/orchestrator/memory — inspect what the orchestrator has learned
 export async function GET(req: NextRequest) {
@@ -8,41 +8,34 @@ export async function GET(req: NextRequest) {
     if (!adminSecret || req.headers.get('x-admin-secret') !== adminSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const supabase = createServiceClient()
     const { searchParams } = new URL(req.url)
     const disputeType = searchParams.get('type')
     const bureau = searchParams.get('bureau')
-    const minSamples = parseInt(searchParams.get('min_samples') ?? '1')
+    const minSamples = parseInt(searchParams.get('min_samples') ?? '1') || 1
 
-    let query = supabase
-      .from('orchestrator_memory')
-      .select('*')
-      .gte('sample_count', minSamples)
-      .order('confidence_score', { ascending: false })
-      .order('sample_count', { ascending: false })
-      .limit(50)
-
-    if (disputeType) query = query.eq('dispute_type', disputeType)
-    if (bureau) query = query.eq('bureau', bureau)
-
-    const { data, error } = await query
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    const data = await q(
+      `select * from orchestrator_memory
+        where sample_count >= $1
+          and ($2::text is null or dispute_type = $2)
+          and ($3::text is null or bureau = $3)
+        order by confidence_score desc, sample_count desc
+        limit 50`,
+      [minSamples, disputeType, bureau]
+    )
 
     // Also return a summary of overall stats
-    const { data: stats } = await supabase
-      .from('orchestrator_memory')
-      .select('outcome, success_rate, sample_count, dispute_type')
-
     type StatRow = { outcome: string; success_rate: number | null; sample_count: number | null; dispute_type: string }
     type TypeSummary = { samples: number; avgSuccess: number }
+    const stats = await q<StatRow>(
+      `select outcome, success_rate, sample_count, dispute_type from orchestrator_memory`
+    )
 
-    const totalSamples = (stats as StatRow[] ?? []).reduce((acc: number, s: StatRow) => acc + (s.sample_count ?? 0), 0)
-    const overallSuccessRate = stats && stats.length > 0
-      ? (stats as StatRow[]).reduce((acc: number, s: StatRow) => acc + ((s.success_rate ?? 0) * (s.sample_count ?? 1)), 0) / (totalSamples || 1)
+    const totalSamples = stats.reduce((acc, s) => acc + (s.sample_count ?? 0), 0)
+    const overallSuccessRate = stats.length > 0
+      ? stats.reduce((acc, s) => acc + ((s.success_rate ?? 0) * (s.sample_count ?? 1)), 0) / (totalSamples || 1)
       : 0
 
-    const byType = (stats as StatRow[] ?? []).reduce<Record<string, TypeSummary>>((acc: Record<string, TypeSummary>, s: StatRow) => {
+    const byType = stats.reduce<Record<string, TypeSummary>>((acc, s) => {
       if (!acc[s.dispute_type]) acc[s.dispute_type] = { samples: 0, avgSuccess: 0 }
       acc[s.dispute_type].samples += s.sample_count ?? 1
       acc[s.dispute_type].avgSuccess = (
@@ -55,7 +48,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       memories: data,
       summary: {
-        totalPatterns: data?.length ?? 0,
+        totalPatterns: data.length,
         totalSamples,
         overallSuccessRate: Math.round(overallSuccessRate * 100),
         byType,

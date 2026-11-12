@@ -2,7 +2,8 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { getMyProfileAction } from '@/app/(consumer)/profile/actions'
+import { currentUserAction } from '@/app/(auth)/actions'
 import ExpungeLogo from '@/components/ExpungeLogo'
 
 type UploadMode = 'file' | 'paste'
@@ -21,14 +22,8 @@ export default function UploadPage() {
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { router.push('/login'); return }
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('address_line1, city, state, zip_code, ssn_last4, date_of_birth')
-        .eq('id', user.id)
-        .single()
+    getMyProfileAction().then((profile) => {
+      if (!profile) { router.push('/login'); return }
       const complete = !!(
         profile?.address_line1 && profile?.city && profile?.state &&
         profile?.zip_code && profile?.ssn_last4 && profile?.date_of_birth
@@ -74,8 +69,7 @@ export default function UploadPage() {
     setStep('processing')
     setStatusMsg('Uploading file...')
 
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUserAction()
     if (!user) { router.push('/login'); return }
 
     const formData = new FormData()
@@ -114,8 +108,7 @@ export default function UploadPage() {
     setError('')
     setStep('processing')
 
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUserAction()
     if (!user) { router.push('/login'); return }
 
     setStatusMsg('Creating case...')

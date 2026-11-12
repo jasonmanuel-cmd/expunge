@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { requestPasswordResetAction } from '@/app/(auth)/actions'
 import ExpungeLogo from '@/components/ExpungeLogo'
 
 export default function ForgotPasswordPage() {
@@ -15,15 +15,10 @@ export default function ForgotPasswordPage() {
     setLoading(true)
     setError('')
 
-    const supabase = createClient()
-    const redirectUrl = `${window.location.origin}/reset-password`
-
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
-    })
+    const { error: resetError } = await requestPasswordResetAction(email)
 
     if (resetError) {
-      setError(resetError.message)
+      setError(resetError)
       setLoading(false)
       return
     }

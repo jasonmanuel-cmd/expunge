@@ -1,4 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server'
+import { q1 } from '@/lib/db'
 import { isFirmPlanActive, resolveEffectivePlan } from '@/lib/partner/firm'
 import { getSponsoringFirm } from '@/lib/partner/server'
 
@@ -24,13 +24,11 @@ export interface UserPlan {
 }
 
 export async function getUserPlan(userId: string): Promise<UserPlan> {
-  const supabase = createServiceClient()
-
-  const { data: sub } = await supabase
-    .from('subscriptions')
-    .select('plan, status, current_period_end, square_subscription_id')
-    .eq('user_id', userId)
-    .single()
+  const sub = await q1<{ plan: string; status: string; current_period_end: string | null; square_subscription_id: string | null }>(
+    `select plan::text as plan, status::text as status, current_period_end, square_subscription_id
+       from subscriptions where user_id = $1`,
+    [userId]
+  )
 
   const ownPlan = (sub?.plan ?? 'free') as PlanTier
   const status = sub?.status ?? 'active'
@@ -52,11 +50,13 @@ export async function getUserPlan(userId: string): Promise<UserPlan> {
   })
   const isActive = ownActive || sponsored
 
-  const { data: limits } = await supabase
-    .from('plan_limits')
-    .select('*')
-    .eq('plan', plan)
-    .single()
+  const limits = await q1<{
+    max_cases: number
+    max_items_per_case: number
+    tri_bureau: boolean
+    escalation_bot: boolean
+    partner_dashboard: boolean
+  }>(`select * from plan_limits where plan = $1::plan_tier`, [plan])
 
   // Expunge has no consumer tier. An account with no firm plan behind it (an
   // uninvited sign-up, or a client whose firm's plan lapsed) can sign in and
@@ -95,14 +95,12 @@ export async function assertPlanLimit(
   }
 
   if (check === 'cases') {
-    const supabase = createServiceClient()
-    const { count } = await supabase
-      .from('cases')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .not('status', 'in', '(completed,failed)')
+    const row = await q1<{ n: number }>(
+      `select count(*)::int as n from cases where user_id = $1 and status not in ('completed', 'failed')`,
+      [userId]
+    )
 
-    if ((count ?? 0) >= plan.maxCases) {
+    if ((row?.n ?? 0) >= plan.maxCases) {
       return {
         allowed: false,
         reason: `This account allows ${plan.maxCases} active case${plan.maxCases === 1 ? '' : 's'}. Finish or close one to start another.`,

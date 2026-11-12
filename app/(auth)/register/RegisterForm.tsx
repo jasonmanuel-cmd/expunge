@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signUpAction } from '@/app/(auth)/actions'
 import ExpungeLogo from '@/components/ExpungeLogo'
 
 interface Props {
@@ -46,48 +46,39 @@ export default function RegisterForm({ inviteCode, inviteFirm, initialRole }: Pr
       : isFirm
         ? '/partner/dashboard'
         : '/dashboard'
-    const supabase = createClient()
-    // Store the post-auth redirect target in a cookie so the callback route
-    // can retrieve it without relying on query params (Supabase email links
-    // re-encode query values, breaking nested redirect URLs).
-    document.cookie = `expunge_next=${encodeURIComponent(next)}; path=/; max-age=600; SameSite=Lax`
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // The server creates the account and profile, and links an invited client
+    // to their firm. Firm accounts don't dispute their own credit, so they skip
+    // the personal details. `next` is remembered for after the confirm link.
+    const result = await signUpAction({
       email,
       password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-        // Firm accounts don't dispute their own credit, so they skip the
-        // personal details. Invited clients carry the firm's invite code, and
-        // the signup trigger links them to that firm.
-        data: isFirm
-          ? { full_name: fullName, role }
-          : {
-              full_name: fullName,
-              role,
-              address_line1: addressLine1,
-              address_line2: addressLine2 || null,
-              city,
-              state,
-              zip_code: zipCode,
-              ssn_last4: ssnLast4,
-              date_of_birth: dateOfBirth,
-              ...(inviteCode ? { invite_code: inviteCode } : {}),
-            },
-      },
+      fullName,
+      role,
+      next,
+      ...(isFirm
+        ? {}
+        : {
+            addressLine1,
+            addressLine2: addressLine2 || null,
+            city,
+            state,
+            zipCode,
+            ssnLast4,
+            dateOfBirth,
+            inviteCode,
+          }),
     })
 
-    if (authError) {
-      setError(authError.message)
+    if (result.error) {
+      setError(result.error)
       setLoading(false)
       return
     }
 
-    // The DB trigger (handle_new_user) creates the profile row with all the
-    // metadata above. When email confirmation is enabled there is no session
-    // yet, so show the "check your inbox" screen. When it's disabled a session
-    // exists and we can go straight to the dashboard.
-    if (authData?.session) {
+    // With email confirmation off the user is signed in already.
+    if (result.signedIn) {
       router.push(next)
+      router.refresh()
       return
     }
 
